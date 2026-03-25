@@ -1,0 +1,281 @@
+Screens:
+  scr_ReturnsKanban:
+    Properties:
+      Fill: =RGBA(241, 245, 249, 1)
+      OnVisible: |
+        =Set(gblKanbanPipeline, Coalesce(gblKanbanPipeline, "Customer returns"));
+        Set(gblKanbanSearch, "");
+        Set(gblKanbanSelectedCard, Blank());
+        If(
+            IsEmpty(colPipelineStages),
+            ClearCollect(
+                colPipelineStages,
+                Table(
+                    {id: 1,  name: "CR Initial enquiry & Fact finding",  pipeline_name: "Customer returns"},
+                    {id: 2,  name: "CR Awaiting authorisation",          pipeline_name: "Customer returns"},
+                    {id: 3,  name: "CR Authorised",                      pipeline_name: "Customer returns"},
+                    {id: 4,  name: "CR Collection raised & issued",      pipeline_name: "Customer returns"},
+                    {id: 5,  name: "CR Goods back at Warehouse",         pipeline_name: "Customer returns"},
+                    {id: 6,  name: "CR Credit raised",                   pipeline_name: "Customer returns"},
+                    {id: 7,  name: "VR Initial vendor contact",          pipeline_name: "Vendor returns"},
+                    {id: 8,  name: "VR Awaiting authorisation",          pipeline_name: "Vendor returns"},
+                    {id: 9,  name: "VR Authorised",                      pipeline_name: "Vendor returns"},
+                    {id: 10, name: "VR Stock transfer raised",           pipeline_name: "Vendor returns"},
+                    {id: 11, name: "VR Goods shipped/collected",         pipeline_name: "Vendor returns"},
+                    {id: 12, name: "VR Credit note received",            pipeline_name: "Vendor returns"},
+                    {id: 13, name: "RR Initial Vendor Contact",          pipeline_name: "Repair Returns"},
+                    {id: 14, name: "RR Awaiting Authorisation",          pipeline_name: "Repair Returns"},
+                    {id: 15, name: "RR Authorised",                      pipeline_name: "Repair Returns"},
+                    {id: 16, name: "RR Stock Transfer Raised",           pipeline_name: "Repair Returns"},
+                    {id: 17, name: "RR Goods Shipped/Collected",         pipeline_name: "Repair Returns"},
+                    {id: 18, name: "RR Goods returned back from Vendor", pipeline_name: "Repair Returns"},
+                    {id: 19, name: "RR Goods shipped back to customer",  pipeline_name: "Repair Returns"},
+                    {id: 20, name: "Graded Stock Initial Investigation", pipeline_name: "Graded Stock"},
+                    {id: 21, name: "Graded Stock Decision Made",         pipeline_name: "Graded Stock"}
+                )
+            )
+        );
+        If(
+            IsEmpty(colKanbanDeals),
+            ClearCollect(
+                colKanbanDeals,
+                Table(
+                    {
+                        id: 1001,
+                        title: "Order #450201 - damaged unit",
+                        stage_id: 1,
+                        owner: "Alex",
+                        priority: "High",
+                        value: 1250,
+                        updated_on: Today() - 1,
+                        related_email_id: Blank(),
+                        notes: "Awaiting customer photo evidence"
+                    },
+                    {
+                        id: 1002,
+                        title: "Order #450877 - wrong item",
+                        stage_id: 2,
+                        owner: "Sam",
+                        priority: "Medium",
+                        value: 490,
+                        updated_on: Today(),
+                        related_email_id: Blank(),
+                        notes: "Credit check in progress"
+                    },
+                    {
+                        id: 1003,
+                        title: "Vendor RMA #V-223",
+                        stage_id: 8,
+                        owner: "Jamie",
+                        priority: "High",
+                        value: 2400,
+                        updated_on: Today() - 2,
+                        related_email_id: Blank(),
+                        notes: "Waiting for vendor authorization"
+                    },
+                    {
+                        id: 1004,
+                        title: "Repair return #RR-8891",
+                        stage_id: 17,
+                        owner: "Jordan",
+                        priority: "Low",
+                        value: 180,
+                        updated_on: Today() - 5,
+                        related_email_id: Blank(),
+                        notes: "Courier collection arranged"
+                    }
+                )
+            )
+        )
+    Children:
+      - vcon_kanbanShell:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            Width: =Parent.Width
+          Children:
+            - hcon_kanbanTopBar:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(15, 23, 42, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  PaddingLeft: =20
+                  PaddingRight: =20
+                Children:
+                  - lbl_kanbanTitle:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        Size: =18
+                        Text: ="🗂️ Returns Kanban"
+                        Weight: ='TextCanvas.Weight'.Bold
+                        Width: =210
+                  - drp_kanbanPipeline:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        Default: =gblKanbanPipeline
+                        Items: =Distinct(colPipelineStages, pipeline_name)
+                        OnChange: =Set(gblKanbanPipeline, Self.Selected.Value)
+                        Width: =190
+                  - txt_kanbanSearch:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderColor: =RGBA(71, 85, 105, 1)
+                        Default: =gblKanbanSearch
+                        Fill: =RGBA(30, 41, 59, 1)
+                        FillPortions: =1
+                        HintText: ="Search cards…"
+                        OnChange: =Set(gblKanbanSearch, Self.Text)
+                  - btn_kanbanCreateFromEmail:
+                      Control: Button@0.0.45
+                      Properties:
+                        BasePaletteColor: =RGBA(59, 130, 246, 1)
+                        OnSelect: |-
+                          =If(
+                              IsBlank(gblSelectedEmail),
+                              Notify("Select an email in Inbox first.", NotificationType.Warning),
+                              Collect(
+                                  colKanbanDeals,
+                                  {
+                                      id: Value(Text(Now(), "[$-en-US]yymmddhhmmss")),
+                                      title: gblSelectedEmail.Subject,
+                                      stage_id: LookUp(colPipelineStages, pipeline_name = gblKanbanPipeline, id),
+                                      owner: User().FullName,
+                                      priority: "Medium",
+                                      value: 0,
+                                      updated_on: Today(),
+                                      related_email_id: gblSelectedEmail.Id,
+                                      notes: gblSelectedEmail.BodyPreview
+                                  }
+                              );
+                              Notify("Card created from selected email.", NotificationType.Success)
+                          )
+                        Text: ="Create from Email"
+                        Width: =160
+            - gal_kanbanColumns:
+                Control: Gallery@2.15.0
+                Variant: BrowseLayout_Vertical_ThreeTextVariant_ver5.0
+                Properties:
+                  FillPortions: =1
+                  Items: =Filter(colPipelineStages, pipeline_name = gblKanbanPipeline)
+                  TemplatePadding: =10
+                  TemplateSize: =340
+                  WrapCount: =4
+                Children:
+                  - con_columnCard:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(248, 250, 252, 1)
+                        Height: =Parent.TemplateHeight - 12
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Width: =Parent.TemplateWidth - 12
+                        X: =6
+                        Y: =6
+                      Children:
+                        - lbl_columnName:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(15, 23, 42, 1)
+                              Size: =12
+                              Text: =ThisItem.name
+                              Weight: ='TextCanvas.Weight'.Semibold
+                        - lbl_columnCount:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(100, 116, 139, 1)
+                              Size: =11
+                              Text: =Text(CountIf(colKanbanDeals, stage_id = ThisItem.id)) & " cards"
+                        - gal_stageCards:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              FillPortions: =1
+                              Items: |-
+                                =With(
+                                    {stageId: ThisItem.id},
+                                    Filter(
+                                        colKanbanDeals,
+                                        stage_id = stageId,
+                                        IsBlank(gblKanbanSearch) Or (gblKanbanSearch in title) Or (gblKanbanSearch in owner)
+                                    )
+                                )
+                              TemplatePadding: =6
+                              TemplateSize: =112
+                            Children:
+                              - rec_cardBg:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =If(gblKanbanSelectedCard.id = ThisItem.id, RGBA(219, 234, 254, 1), RGBA(255, 255, 255, 1))
+                                    Height: =Parent.TemplateHeight
+                                    Width: =Parent.TemplateWidth
+                              - lbl_cardTitle:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(15, 23, 42, 1)
+                                    Size: =12
+                                    Text: =ThisItem.title
+                                    Weight: ='TextCanvas.Weight'.Semibold
+                                    Width: =Parent.TemplateWidth - 16
+                                    X: =8
+                                    Y: =8
+                              - lbl_cardMeta:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(71, 85, 105, 1)
+                                    Size: =10
+                                    Text: =ThisItem.owner & " · £" & Text(ThisItem.value, "[$-en-GB]#,##0")
+                                    Width: =Parent.TemplateWidth - 16
+                                    X: =8
+                                    Y: =36
+                              - lbl_cardDate:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Size: =10
+                                    Text: ="Updated " & Text(ThisItem.updated_on, "dd mmm")
+                                    Width: =Parent.TemplateWidth - 16
+                                    X: =8
+                                    Y: =56
+                              - ico_cardPriority:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =If(ThisItem.priority = "High", RGBA(220, 38, 38, 1), If(ThisItem.priority = "Medium", RGBA(217, 119, 6, 1), RGBA(22, 163, 74, 1)))
+                                    Height: =14
+                                    Icon: =Icon.Flag
+                                    Width: =14
+                                    X: =8
+                                    Y: =84
+                              - lbl_cardPriority:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(71, 85, 105, 1)
+                                    Size: =10
+                                    Text: =ThisItem.priority
+                                    X: =28
+                                    Y: =82
+                              - btn_selectCard:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Height: =Parent.TemplateHeight
+                                    OnSelect: =Set(gblKanbanSelectedCard, ThisItem)
+                                    Text: =""
+                                    Width: =Parent.TemplateWidth
