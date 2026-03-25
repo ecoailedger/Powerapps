@@ -115,7 +115,8 @@ Screens:
                       Properties:
                         FontColor: =RGBA(255, 255, 255, 1)
                         Size: =18
-                        Text: ="🗂️ Returns Kanban"
+                        Text: |-
+                          ="🗂️ Returns Kanban"
                         Weight: ='TextCanvas.Weight'.Bold
                         Width: =210
                   - drp_kanbanPipeline:
@@ -123,6 +124,7 @@ Screens:
                       Properties:
                         Default: =gblKanbanPipeline
                         Items: =Distinct(colPipelineStages, pipeline_name)
+                        Items.Value: =Value
                         OnChange: =Set(gblKanbanPipeline, Self.Selected.Value)
                         Width: =190
                   - txt_kanbanSearch:
@@ -164,7 +166,6 @@ Screens:
                 Control: Gallery@2.15.0
                 Variant: BrowseLayout_Vertical_ThreeTextVariant_ver5.0
                 Properties:
-                  FillPortions: =1
                   Items: =Filter(colPipelineStages, pipeline_name = gblKanbanPipeline)
                   TemplatePadding: =10
                   TemplateSize: =340
@@ -207,7 +208,6 @@ Screens:
                             Control: Gallery@2.15.0
                             Variant: Vertical
                             Properties:
-                              FillPortions: =1
                               Items: |-
                                 =With(
                                     {stageId: ThisItem.id},
@@ -257,7 +257,6 @@ Screens:
                               - ico_cardPriority:
                                   Control: Classic/Icon@2.5.0
                                   Properties:
-                                    Color: =If(ThisItem.priority = "High", RGBA(220, 38, 38, 1), If(ThisItem.priority = "Medium", RGBA(217, 119, 6, 1), RGBA(22, 163, 74, 1)))
                                     Height: =14
                                     Icon: =Icon.Flag
                                     Width: =14
@@ -270,7 +269,7 @@ Screens:
                                     Size: =10
                                     Text: =ThisItem.priority
                                     X: =28
-                                    Y: =82
+                                    Y: =80
                               - btn_selectCard:
                                   Control: Button@0.0.45
                                   Properties:
