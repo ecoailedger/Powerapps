@@ -1,0 +1,1109 @@
+Screens:
+  scrHome:
+    Properties:
+      Fill: =varTheme.Main.BackgroundColor
+      OnVisible: |-
+        =UpdateContext({
+            lvar_showFundPopup: false,
+            lvar_modalMode: ""
+            // gvar_FundContext: Blank()
+        });
+        UpdateContext({
+            w_FundId: 80,
+            w_FundName: 200,
+            w_Brand: 140,
+            w_QtrYr: 110,
+            w_Approved: 120,
+            w_Allocated: 120,
+            w_Predicted: 120,
+            w_SumCost: 140,
+            w_SumPO: 140,
+            w_Status: 110,
+            w_CreatedBy: 140,
+            w_CreatedDate: 120,
+            w_View: 50
+        });
+    Children:
+      - con_mainLayoutHS_7:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            PaddingTop: =60
+            Width: =Parent.Width
+          Children:
+            - con_topSectionHS_7:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                Children:
+                  - con_navigationSidebarHS_7:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =10
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =180
+                      Children:
+                        - comNavigation_8:
+                            Control: CanvasComponent
+                            ComponentName: comNavigation
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Center
+                              Fill: =Color.Transparent
+                              FillPortions: =1
+                              Height: =800
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinHeight: =100
+                              Width: =Parent.Width
+                  - con_mainContentHS_7:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        FillPortions: =7
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =5
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        PaddingBottom: =varTheme.Main.Padding
+                        PaddingLeft: =varTheme.Main.Padding
+                        PaddingRight: =varTheme.Main.Padding
+                        PaddingTop: =varTheme.Main.Padding
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - vcon_RecentPurchaseOrdersHS_5:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Regular
+                              Fill: =varTheme.Body.Container.BackgroundColor
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =varTheme.Body.Container.Padding
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              PaddingBottom: =varTheme.Body.Container.Padding
+                              PaddingLeft: =varTheme.Body.Container.Padding
+                              PaddingRight: =varTheme.Body.Container.Padding
+                              PaddingTop: =varTheme.Body.Container.Padding
+                            Children:
+                              - hcon_RecentPurchaseOrdersTitle_3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =42
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =10
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                  Children:
+                                    - lbl_RecentPurchaseOrderTitle_3:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          AutoHeight: =true
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Size: =
+                                          Text: ="FUNDS"
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - cmb_PO_1:
+                                        Control: ModernCombobox@1.0.0
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          FontWeight: =""
+                                          InputTextPlaceholder: ="Select created by"
+                                          ItemDisplayText: =ThisItem.Value
+                                          Items: =Distinct(ColFunds, created_by_name)
+                                          SelectMultiple: =false
+                                          Size: =0
+                                    - txt_SearchPOReferenceHS_4:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          AccessibleLabel: ="Search Fund Name"
+                                          AlignInContainer: =AlignInContainer.Center
+                                          BorderRadius: =10
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =300
+                                          OnChange: |-
+                                            =/*ClearCollect(
+                                                colPurchaseOrders,
+                                                'sqldb-orders-dev'.dbownersprocpoSearchPurchaseOrders(
+                                                    {
+                                                        MaxResults: 100,
+                                                        SearchText: txt_SearchPOReferenceHS_3.Value,
+                                                        SupplierCode: Blank(),
+                                                        /*SupplierCode: If(
+                                                            IsBlank(cbx_supplierCodeFilterHS.Selected),
+                                                            Blank(),
+                                                            cbx_supplierCodeFilterHS.Selected.Value
+                                                        ),
+                                                        SupplierName: Blank(),
+                                                        Location: Blank(),
+                                                        Status: Blank(),
+                                                        AssignedTo: Blank(),
+                                                        DueDateFrom: Date(
+                                                            1900,
+                                                            1,
+                                                            1
+                                                        ),
+                                                        DueDateTo: Date(
+                                                            2099,
+                                                            12,
+                                                            31
+                                                        ),
+                                                        HasQuery: Blank()
+                                                    }
+                                                ).ResultSets.Table1
+                                            );*/
+                                          Placeholder: ="Search by Fund Name"
+                                    - btn_Refresh_4:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Align: =Align.Center
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          BorderColor: =RGBA(25, 70, 250, 1)
+                                          BorderRadius: =8
+                                          BorderStyle: =BorderStyle.Solid
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          FontColor: =RGBA(25, 70, 250, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =btnAddLine_4.Height
+                                          Icon: ="ArrowReset"
+                                          IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =40
+                                          LayoutMinWidth: =40
+                                          OnSelect: |-
+                                            =Reset(cmb_PO_1);
+                                            Reset(txt_SearchPOReferenceHS_4)
+                                          Text: =
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =10
+                                          X: =40
+                                          Y: =40
+                                    - btn_New_Job_6:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          Appearance: ='ButtonCanvas.Appearance'.Primary
+                                          BasePaletteColor: =RGBA(25, 70, 250, 1)
+                                          BorderRadius: =8
+                                          FontWeight: =FontWeight.Normal
+                                          Icon: ="Add"
+                                          IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          OnSelect: |-
+                                            =UpdateContext({
+                                                lvar_showFundPopup: true,
+                                                lvar_modalMode: "add"
+                                            });
+                                          Text: ="Add Fund"
+                                          Width: =120
+                              - hcon_PurchaseOrderHeaders_4:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Center
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =42
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinWidth: =0
+                                    Width: =Parent.Width-20
+                                  Children:
+                                    - lbl_POIDHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Fund ID"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_POReferenceHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =lbl_Fund_Name_5.Width
+                                          Size: =12
+                                          Text: ="Fund Name"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =
+                                    - lbl_DateCreatedHeader_8:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =lbl_Fund_Name_11.Width
+                                          Size: =12
+                                          Text: ="Brand"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_SupplierCodeHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Quarter-Year"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_LocationHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Income"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_TotalPurchaseGBPHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Actual Cost Line Items"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_DueDateHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="PO Allocations"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_TotalPurchaseHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Total Actuals"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_FxRateHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Profit / Loss"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_StatusHeader_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          Size: =12
+                                          Text: ="Status"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                    - lbl_DateCreatedHeader_9:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =1
+                                          FillPortions: =1
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =0
+                                          PaddingRight: =5
+                                          Size: =12
+                                          Text: ="View"
+                                          VerticalAlign: =VerticalAlign.Top
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                              - gal_RecentPurchaseOrdersHS_3:
+                                  Control: Gallery@2.15.0
+                                  Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                                  Properties:
+                                    AccessibleLabel: ="Purchase orders list, " & CountRows(Self.AllItems) & " orders"
+                                    Items: |-
+                                      =Filter(
+                                            ColFunds,
+                                            (
+                                                IsBlank(txt_SearchPOReferenceHS_4.Value) ||
+                                                StartsWith(name, txt_SearchPOReferenceHS_4.Value) ||
+                                                StartsWith(brand_name, txt_SearchPOReferenceHS_4.Value)
+                                            ) &&
+                                            (
+                                                IsBlank(cmb_PO_1.Selected) ||
+                                                created_by_name = cmb_PO_1.Selected.Value
+                                            )
+                                        )
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    TemplateSize: =Max(44, hcon_RecentPurchaseOrderValues_9.Height + 2)
+                                    Width: =hcon_PurchaseOrderHeaders_4.Width
+                                  Children:
+                                    - hcon_RecentPurchaseOrderValues_9:
+                                        Control: GroupContainer@1.5.0
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(214, 221, 224, 1)
+                                          DropShadow: =DropShadow.None
+                                          Height: =42
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - lbl_FundID_5:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: |
+                                                  =//ThisItem.purchase_order_id
+                                                  ThisItem.id
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_POIDHeader_4.Width
+                                          - lbl_Fund_Name_5:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =150
+                                                Size: =13
+                                                Text: |-
+                                                  =//Text(DateValue(ThisItem.order_date),"dd mmm yyyy")
+                                                  ThisItem.name
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =
+                                          - lbl_Fund_Name_11:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =100
+                                                Size: =13
+                                                Text: =ThisItem.brand_name
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =
+                                          - lbl_Fund_Quarter_Year_5:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: |
+                                                  =ThisItem.period_label
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_SupplierCodeHeader_4.Width
+                                          - lbl_Fund_Approved_Budget_5:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: =ThisItem.total_income_formatted
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_LocationHeader_4.Width
+                                          - lbl_Fund_Allocated_Budget_3:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =12
+                                                Text: |-
+                                                  =//ThisItem.fx_rate
+                                                  Text(ThisItem.total_budget, "£#,##0")
+                                                VerticalAlign: =VerticalAlign.Top
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =
+                                          - lbl_Fund_Predicted_Cost_4:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: =ThisItem.total_actual_cost_line_items_formatted
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_TotalPurchaseHeader_4.Width
+                                          - lbl_Fund_Sum_Line_Cost_3:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: =ThisItem.total_po_allocations_formatted
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_FxRateHeader_4.Width
+                                          - lbl_Fund_Sum_PO_4:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                BorderRadius: =10
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                PaddingRight: =2
+                                                Size: =13
+                                                Text: =ThisItem.total_actuals_formatted
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Width: =lbl_TotalPurchaseGBPHeader_4.Width
+                                          - lbl_Fund_Sum_PO_6:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                BorderRadius: =10
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: =ThisItem.profit_loss_formatted
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Width: =lbl_DueDateHeader_4.Width
+                                          - lbl_Fund_Status_4:
+                                              Control: Text@0.0.51
+                                              Properties:
+                                                Align: ='TextCanvas.Align'.Center
+                                                AutoHeight: =true
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                Size: =13
+                                                Text: =ThisItem.fund_status_name
+                                                VerticalAlign: =VerticalAlign.Middle
+                                                Weight: ='TextCanvas.Weight'.Regular
+                                                Width: =lbl_StatusHeader_4.Width
+                                          - icon_EditFund:
+                                              Control: Classic/Icon@2.5.0
+                                              Properties:
+                                                AccessibleLabel: ="View fund details"
+                                                AlignInContainer: =AlignInContainer.Center
+                                                BorderStyle: =BorderStyle.None
+                                                BorderThickness: =1
+                                                FillPortions: =1
+                                                Height: =20
+                                                Icon: =Icon.ChevronRight
+                                                LayoutMaxHeight: =
+                                                LayoutMaxWidth: =
+                                                LayoutMinWidth: =0
+                                                OnSelect: |
+                                                  =Set(gvar_Selected_Fund, ThisItem);
+                                                  Navigate(scrFund_Detail, ScreenTransition.Fade)
+                                                Width: =lbl_DateCreatedHeader_9.Width
+                                    - rect_rowSeparatorHS_8:
+                                        Control: Rectangle@2.3.0
+                                        Properties:
+                                          Fill: =Color.LightGray
+                                          Height: =1
+                                          OnSelect: =Select(Parent)
+                                          Width: =Parent.Width
+                                          Y: =Parent.TemplateHeight-5
+      - con_modalHost_1:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.05)
+            Height: =App.Height
+            Visible: =lvar_showFundPopup
+            Width: =App.Width
+          Children:
+            - rect_modalBackdrop:
+                Control: Rectangle@2.3.0
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 0)
+                  BorderStyle: =BorderStyle.None
+                  BorderThickness: =2
+                  DisabledFill: =RGBA(161, 159, 157, 1)
+                  Fill: =RGBA(0,0,0,0.4)
+                  FocusedBorderThickness: =4
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0,0,0,0.4)
+                  OnSelect: =Select(btn_cancelFundTopRight)
+                  PressedFill: =RGBA(0, 120, 212, 1)
+                  Width: =Parent.Width
+            - vcon_addFundModal_1:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.Regular
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =Min(Parent.Height - 80, 500)
+                  LayoutDirection: =LayoutDirection.Vertical
+                  PaddingBottom: =varTheme.Body.Container.Padding
+                  PaddingLeft: =varTheme.Body.Container.Padding
+                  PaddingRight: =varTheme.Body.Container.Padding
+                  PaddingTop: =varTheme.Body.Container.Padding
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Visible: =lvar_showFundPopup
+                  Width: =(Parent.Width/1.4)
+                  X: =(Parent.Width-Self.Width)/2
+                  Y: =(Parent.Height-Self.Height)/2
+                Children:
+                  - hcon_centerPopupTitleSOD_11:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        FillPortions: =0
+                        Height: =40
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        PaddingLeft: =10
+                        PaddingRight: =10
+                      Children:
+                        - lbl_centerPopupTitleSOD_11:
+                            Control: Text@0.0.51
+                            Properties:
+                              FillPortions: =1
+                              Height: =Parent.Height
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              Size: =16
+                              Text: ="New Fund"
+                              VerticalAlign: =VerticalAlign.Middle
+                              Weight: ='TextCanvas.Weight'.Semibold
+                        - btn_cancelFundTopRight:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Icon: ="Dismiss"
+                              Layout: ='ButtonCanvas.Layout'.IconOnly
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              OnSelect: |-
+                                =UpdateContext({
+                                    lvar_showFundPopup: false,
+                                    lvar_modalMode: ""
+                                });
+                                Set(gvar_Selected_Fund,{});
+                                Reset(txt_fromCmpEmailValue_3);
+                                Reset(cmb_brand);
+                                Reset(cmb_QuarterYear);
+                                Reset(cmb_currency);
+                                Reset(txt_fromCmpEmailValue_6);
+                                Reset(txt_fromCmpEmailValue_5);
+                                Reset(txt_fromCmpAddressValue_4);
+                              Text: ="Close"
+                              Width: =32
+                  - vcon_fromCompanyDetailsSOD_3:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        DropShadow: =DropShadow.None
+                        FillPortions: =5
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinHeight: =110
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        PaddingTop: =10
+                        Visible: |
+                          =lvar_showFundPopup
+                        Width: =hcon_centerPopupTitleSOD_11.Width
+                      Children:
+                        - hcon_fromCompanyDetails_4:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinHeight: =50
+                              LayoutOverflowX: =LayoutOverflow.Scroll
+                            Children:
+                              - vcon_fromCmpName_2:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpNameTitle_3:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Fund Name"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - txt_fromCmpEmailValue_3:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =100
+                                          Value: |
+                                            =//If(!gvar_isNewSalesOrder,gvar_selectedSalesOrder.email)
+                                          Width: =Parent.Width - 20
+                              - vcon_fromCmpPhone_3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpPhoneTitle_3:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Brand"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - cmb_brand:
+                                        Control: ComboBox@0.0.51
+                                        Properties:
+                                          InputTextPlaceholder: ="Select Brand"
+                                          Items: =ColBrands
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Width: =Parent.Width - 20
+                                        Children:
+                                          - name2:
+                                              Control: ComboBoxDataField@1.5.0
+                                              Variant: textualColumn
+                                              IsLocked: true
+                                              Properties:
+                                                FieldDisplayName: ="name"
+                                                FieldName: ="name"
+                                                FieldType: ="s"
+                                                Order: =1
+                              - vcon_fromCmpEmail_2:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpEmailTitle_2:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Quarter Year"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - cmb_QuarterYear:
+                                        Control: ComboBox@0.0.51
+                                        Properties:
+                                          DefaultSelectedItems: =gvar_currentPeriodRecord
+                                          InputTextPlaceholder: ="Select Currency"
+                                          Items: =ColPeriods
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Width: =Parent.Width - 20
+                                        Children:
+                                          - name12:
+                                              Control: ComboBoxDataField@1.5.0
+                                              Variant: textualColumn
+                                              IsLocked: true
+                                              Properties:
+                                                FieldDisplayName: ="name"
+                                                FieldName: ="name"
+                                                FieldType: ="s"
+                                                Order: =1
+                        - hcon_fromCompanyDetails_5:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinHeight: =50
+                              LayoutOverflowX: =LayoutOverflow.Scroll
+                            Children:
+                              - vcon_fromCmpName_3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpNameTitle_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Currency"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - cmb_currency:
+                                        Control: ComboBox@0.0.51
+                                        Properties:
+                                          DefaultSelectedItems: =Filter(ColCurrency, name = "British Pound")
+                                          DisplayMode: =DisplayMode.Disabled
+                                          InputTextPlaceholder: ="Select Currency"
+                                          Items: =ColCurrency
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Width: =Parent.Width - 20
+                                        Children:
+                                          - name2_1:
+                                              Control: ComboBoxDataField@1.5.0
+                                              Variant: textualColumn
+                                              IsLocked: true
+                                              Properties:
+                                                FieldDisplayName: ="name"
+                                                FieldName: ="name"
+                                                FieldType: ="s"
+                                                Order: =1
+                              - vcon_fromCmpPhone_4:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpPhoneTitle_4:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Created By"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - txt_fromCmpEmailValue_6:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          DisplayMode: =DisplayMode.Disabled
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =100
+                                          Value: |-
+                                            =//If(!gvar_isNewSalesOrder,gvar_selectedSalesOrder.email)
+                                            User().FullName
+                                          Width: =Parent.Width - 20
+                              - vcon_fromCmpEmail_3:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                  Children:
+                                    - lbl_fromCmpEmailTitle_3:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Created Date"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - txt_fromCmpEmailValue_5:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          DisplayMode: =DisplayMode.Disabled
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =100
+                                          Value: |-
+                                            =//If(!gvar_isNewSalesOrder,gvar_selectedSalesOrder.email)
+                                            Text(Today(),"dd/mm/yyyy")
+                                          Width: =Parent.Width - 20
+                        - hcon_notesSection:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =2
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinHeight: =50
+                              LayoutOverflowX: =LayoutOverflow.Scroll
+                            Children:
+                              - vcon_fromCmpAddress_5:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutMaxHeight: =
+                                    LayoutMaxWidth: =
+                                    LayoutMinHeight: =Parent.Height
+                                    LayoutMinWidth: =200
+                                    PaddingRight: =20
+                                    Width: =Parent.Width
+                                  Children:
+                                    - lbl_fromCmpAddressTitle_5:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Start
+                                          Height: =25
+                                          LayoutMaxHeight: =
+                                          LayoutMaxWidth: =
+                                          Text: ="Notes"
+                                          VerticalAlign: =VerticalAlign.Middle
+                                          Width: =Parent.Width - 20
+                                    - txt_fromCmpAddressValue_4:
+                                        Control: TextInput@0.0.54
+                                        Properties:
+                                          AlignInContainer: =AlignInContainer.Center
+                                          FillPortions: =1
+                                          Height: =50
+                                          LayoutMaxHeight: =Parent.Height - 35
+                                          LayoutMaxWidth: =
+                                          LayoutMinWidth: =100
+                                          Mode: ='TextInputCanvas.Mode'.Multiline
+                                          PaddingBottom: =5
+                                          PaddingLeft: =5
+                                          PaddingRight: =5
+                                          PaddingTop: =5
+                                          Value: |
+                                            =//If(!gvar_isNewSalesOrder,gvar_selectedSalesOrder.address_line_1)
+                                          Width: =Parent.Width - 20
+                  - hcon_SODProductsActionButtons_11:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Height: =20
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =20
+                        LayoutJustifyContent: =LayoutJustifyContent.End
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinHeight: =40
+                        Visible: =lvar_showFundPopup
+                        Width: =hcon_centerPopupTitleSOD_11.Width
+                      Children:
+                        - btn_cancelSODProducts_11:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Secondary
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              OnSelect: =Select(btn_cancelFundTopRight)
+                              Text: ="Cancel"
+                        - btn_addSODProducts_11:
+                            Control: Button@0.0.45
+                            Properties:
+                              BasePaletteColor: =RGBA(25, 70, 250, 1)
+                              FontWeight: =FontWeight.Normal
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              OnSelect: |+
+                                =ClearCollect(
+                                    ColFunds,
+                                    'mosaic-dev'.dbospUpsertFund(
+                                        {
+                                            name: txt_fromCmpEmailValue_3.Value,
+                                            brand_id: cmb_brand.Selected.id,
+                                            currency_id: cmb_currency.Selected.id,
+                                            fund_status_id: 100001,
+                                            notes: txt_fromCmpAddressValue_4.Value,
+                                            period_id: cmb_QuarterYear.Selected.id,
+                                            total_budget: -1,
+                                            user_id: Text(
+                                                User().EntraObjectId
+                                            ),
+                                            user_name: User().FullName
+                                        }
+                                    ).ResultSets.Table1
+                                );
+                                Notify("The new fund '" & txt_fromCmpEmailValue_3.Value & "' has been created", NotificationType.Success);
+
+                                //This button has the logic to hide the modal box and reset the fields.
+                                Select(btn_cancelFundTopRight);
+
+                              Text: |-
+                                =
+                                "Submit"
+      - comHeaderHS_6:
+          Control: CanvasComponent
+          ComponentName: comHeader
+          Properties:
+            Height: =If(varShowUserCtx, 312,60)
+            Width: =Parent.Width
