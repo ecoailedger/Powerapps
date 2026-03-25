@@ -1,0 +1,233 @@
+ComponentDefinitions:
+  comAttachments:
+    DefinitionType: CanvasComponent
+    AccessAppScope: true
+    Properties:
+      Height: =180
+      Width: =130
+    Children:
+      - vcon_attachmentsMain_1:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =5
+            PaddingBottom: =10
+            PaddingLeft: =10
+            PaddingRight: =10
+            PaddingTop: =10
+            Width: =Parent.Width
+          Children:
+            - gal_attachmentsHold_1:
+                Control: Gallery@2.15.0
+                Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                Properties:
+                  Height: =Parent.Height
+                  Items: =att_attachments_1.Attachments
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  Visible: =false
+                  Width: =Parent.Width
+                Children:
+                  - img_attachmentsValueHold_1:
+                      Control: Image@2.2.3
+                      Properties:
+                        Height: =72
+                        Image: =ThisItem.Value
+                        OnSelect: =Select(Parent)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Width: =72
+                        X: =16
+                        Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                  - lbl_attachmentNameHold_1:
+                      Control: Label@2.5.1
+                      Properties:
+                        BorderColor: =RGBA(0, 0, 0, 1)
+                        Color: =RGBA(50, 49, 48, 1)
+                        FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                        Height: =Self.Size * 1.8
+                        OnSelect: =Select(Parent)
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        PaddingTop: =0
+                        Size: =14
+                        Text: =ThisItem.Name
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =Parent.TemplateWidth - 173
+                        X: =103
+                        Y: =(Parent.TemplateHeight - (Self.Size * 1.8)) / 2
+            - hcon_attachments_title:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =0
+                  Height: =40
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - lbl_attachmentsTitle_1:
+                      Control: Text@0.0.51
+                      Properties:
+                        FillPortions: =1
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinWidth: =0
+                        Text: ="Attachments"
+                        Weight: ='TextCanvas.Weight'.Semibold
+                        Width: =Parent.Width - 20
+                        X: =40
+                        Y: =40
+                  - btn_add_Attachment_3:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Primary
+                        BasePaletteColor: =RGBA(25, 70, 250, 1)
+                        BorderRadius: =8
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Normal
+                        Height: =30
+                        Icon: ="Add"
+                        IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinWidth: =0
+                        OnSelect: |-
+                          =Set(gvar_addAttachments, true);
+                          Set(gvar_attachmentgallery, false)
+                        Text: =
+                        Visible: =gvar_attachmentgallery
+                        Width: =60
+                  - btn_cancelattachment:
+                      Control: Button@0.0.45
+                      Properties:
+                        AccessibleLabel: ="Click to submit attachments"
+                        BasePaletteColor: =RGBA(25, 70, 250, 1)
+                        FillPortions: =1
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinWidth: =0
+                        OnSelect: |-
+                          =Set(gvar_addAttachments, false);
+                                  Set(gvar_attachmentgallery, true)
+                        Text: ="Cancel"
+                        Width: =60
+            - ComboboxCanvas2_1:
+                Control: ComboBox@0.0.51
+                Properties:
+                  InputTextPlaceholder: ="Select Attachment Type"
+                  Items: =["ROI", "Email Evidence", "Plan"]
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  X: =40
+                  Y: =40
+            - hcon_attachmentsSave_1:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =20
+                  LayoutJustifyContent: =LayoutJustifyContent.Center
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                Children:
+                  - vcon_attachmentControl_1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        AlignInContainer: =AlignInContainer.SetByContainer
+                        Height: =Parent.Height - 20
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                      Children:
+                        - att_attachments_1:
+                            Control: Attachments@2.3.0
+                            Properties:
+                              AccessibleLabel: ="Click to upload attachment"
+                              BorderColor: =Self.Fill
+                              DropTargetBorderColor: =App.Theme.Colors.Primary
+                              Fill: =RGBA(245, 245, 245, 1)
+                              FillPortions: =1
+                              Height: =Parent.Height - 10
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinHeight: =200
+                              OnAddFile: |-
+                                =// Validation
+                                If(
+                                    CountRows(att_attachments_1.Attachments) = 0,
+                                    Notify("Please select a file to upload", NotificationType.Error);
+                                    Exit()
+                                );
+
+                                If(
+                                    IsBlank(ComboboxCanvas2_1.Selected.Value),
+                                    Notify("Please select an evidence type", NotificationType.Warning);
+                                    Exit()
+                                );
+
+                                // Call flow ONCE PER ATTACHMENT with file
+                                /*ForAll(
+                                    att_attachments.Attachments,
+                                    'Upload-Attachment-To-SharePoint'.Run(
+                                        ThisRecord.Name,                      // text (Name)
+                                        ComboboxCanvas2.Selected.Value,       // text_1 (AttachmentType)
+                                        gvar_Selected_Fund.name,              // text_2 (FundName)
+                                        gvar_Selected_Fund.fiscal_year,       // text_3 (Year)
+                                        "Q" & gvar_Selected_Fund.fiscal_quarter,  // text_4 (Quarter)
+                                        gvar_Selected_Fund.id,                // number (fundid)
+                                        User().FullName,                      // text_5 (username)
+                                        User().EntraObjectId,                  // text_6 (userid)
+                                    )
+                                );*/
+
+                                ForAll(
+                                    att_attachments_1.Attachments,
+                                    'Upload-Attachment-To-SharePoint'.Run(
+                                        ThisRecord.Name,
+                                        ComboboxCanvas2_1.Selected.Value,
+                                        gvar_Selected_Fund.name,
+                                        gvar_Selected_Fund.fiscal_year,
+                                        "Q" & gvar_Selected_Fund.fiscal_quarter,
+                                        gvar_Selected_Fund.id,
+                                        User().FullName,
+                                        User().EntraObjectId,
+                                        ThisRecord.Value,
+                                        {
+                                            file:{
+                                        name: Name,                                  // Parameter 4: file (CVFile)
+                                        contentBytes: Value
+                                                }
+                                        }
+                                    )
+                                );
+
+                                // Success notification and reset
+                                Notify(
+                                    "Uploaded " & CountRows(att_attachments_1.Attachments) & " attachment(s) successfully. Please wait for up to 3 minutes for the attachments to generate in app.",
+                                    NotificationType.Success
+                                );
+
+                                Reset(att_attachments_1);
+                                Reset(ComboboxCanvas2_1);
+                              Size: =11
+                              Width: =Parent.Width

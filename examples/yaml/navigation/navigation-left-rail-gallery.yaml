@@ -1,0 +1,123 @@
+ComponentDefinitions:
+  comNavigation:
+    DefinitionType: CanvasComponent
+    AccessAppScope: true
+    Properties:
+      Fill: =Color.Transparent
+      Height: =800
+      Width: =180
+    Children:
+      - HtmlText1_1:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            Font: =Font.'Open Sans'
+            Height: =Parent.Height
+            HtmlText: |-
+              ="<div style='background-image: linear-gradient(0deg, #1948f744 0%, #00e6c844 100%); height:" & Self.Height - 2 & "px; overflow: hidden;overflow-y: hidden; width:" & Self.Width & "px'></did>"
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =
+            Visible: =false
+            Width: =Parent.Width
+      - Container16:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =10
+            LayoutOverflowY: =LayoutOverflow.Scroll
+            PaddingTop: =10
+            Width: =Parent.Width
+          Children:
+            - TextCanvas8:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Center
+                  AlignInContainer: =AlignInContainer.Center
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  Text: ="MAIN MENU"
+                  VerticalAlign: =VerticalAlign.Middle
+                  Weight: ='TextCanvas.Weight'.Bold
+                  Width: =Parent.Width
+            - Rectangle2:
+                Control: Rectangle@2.3.0
+                Properties:
+                  AlignInContainer: =AlignInContainer.Stretch
+                  Fill: =RGBA(122, 138, 143, 1)
+                  Height: =1
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+            - Gallery1:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  BorderColor: =RGBA(0, 18, 107, 1)
+                  FillPortions: =0
+                  Height: =Self.AllItemsCount * (Self.TemplateHeight + Self.TemplatePadding * 2)
+                  Items: |-
+                    =Table(
+                        { Title: "Funds",              Target: scrHome },
+                        { Title: "Jobs",               Target: scrJobs },
+                        { Title: "Purchase Orders",    Target: scrPO },
+                        { Title: "Divisions & Brands", Target: scrBrandsDivisions },
+                        { Title: "Targets",            Target: scrTargets },
+                        { Title: "Prior Period ADJ",   Target: scrPriorPeriodAdjustments },
+                        { Title: "Events",             Target: scrEvents },
+                        { Title: "Event Templates",    Target: scrTemplates },
+                        { Title: "Reports",            Target: scrReports }
+                    )
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  LayoutMinWidth: =32
+                  OnSelect: =Navigate(ThisItem.Target, ScreenTransition.UnCoverRight)
+                  ShowScrollbar: =false
+                  TabIndex: =0
+                  TemplatePadding: =8
+                  TemplateSize: =44
+                  Width: =Parent.Width
+                  Y: =42
+                Children:
+                  - Container3:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Height: =Parent.TemplateHeight
+                        RadiusBottomLeft: =16
+                        RadiusBottomRight: =16
+                        RadiusTopLeft: =16
+                        RadiusTopRight: =16
+                        Width: =Parent.TemplateWidth - Self.X * 2
+                        X: =8
+                      Children:
+                        - Button1:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderColor: =RGBA(0, 0, 0, 0)
+                              BorderStyle: =BorderStyle.None
+                              BorderThickness: =0
+                              Color: =If(ThisItem.Target = App.ActiveScreen, Color.White, ColorValue("#111827"))
+                              DisabledBorderColor: =RGBA(0, 0, 0, 0)
+                              DisabledColor: =ColorFade(ColorValue("#111827"), 60%)
+                              DisabledFill: =ColorFade(ColorValue("#1946fa"), 80%)
+                              Fill: =If(ThisItem.Target = App.ActiveScreen, ColorValue("#1946fa"), Color.Transparent)
+                              Font: =Font.'Open Sans'
+                              FontWeight: =If(ThisItem.Target = App.ActiveScreen, FontWeight.Semibold, FontWeight.Normal)
+                              Height: =Parent.Height
+                              HoverBorderColor: =RGBA(0, 0, 0, 0)
+                              HoverColor: =Color
+                              HoverFill: =If(ThisItem.Target = App.ActiveScreen, RGBA(25, 70, 250, 0.20), RGBA(25, 70, 250, 0.08))
+                              OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
+                              PressedBorderColor: =RGBA(0, 69, 120, 1)
+                              PressedColor: =Color
+                              PressedFill: =If(ThisItem.Target = App.ActiveScreen, RGBA(25, 70, 250, 0.60), RGBA(25, 70, 250, 0.16))
+                              Size: =11
+                              Text: =ThisItem.Title
+                              Tooltip: =ThisItem.Title & " — open section"
+                              Width: =Parent.Width
+                              X: =
+                              Y: =
