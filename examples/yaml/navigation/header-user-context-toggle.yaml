@@ -1,0 +1,213 @@
+ComponentDefinitions:
+  comHeader:
+    DefinitionType: CanvasComponent
+    AccessAppScope: true
+    Properties:
+      Height: =If(varShowUserCtx, 312,60)
+      Width: =App.Width
+    Children:
+      - Container1:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =varTheme.Main.BackgroundColor
+            Height: =60
+            LayoutDirection: =LayoutDirection.Horizontal
+            PaddingRight: =10
+            Width: =Parent.Width
+          Children:
+            - ButtonCanvas1:
+                Control: Button@0.0.45
+                Properties:
+                  AccessibleLabel: ="""Go back to previous screen"""
+                  AlignInContainer: =AlignInContainer.Center
+                  Appearance: ='ButtonCanvas.Appearance'.Transparent
+                  BasePaletteColor: =RGBA(25,70,250,1)
+                  BorderRadius: =6
+                  FontSize: =50
+                  FontWeight: =FontWeight.Bold
+                  Height: =Parent.Height
+                  Icon: ="ArrowLeft"
+                  IconStyle: ='ButtonCanvas.IconStyle'.Filled
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  OnSelect: =Back(ScreenTransition.None)
+                  Text: =
+                  Visible: =App.ActiveScreen.Name <> "scrHome"
+                  Width: =90
+            - Image1:
+                Control: Image@2.2.3
+                Properties:
+                  AlignInContainer: =AlignInContainer.Start
+                  BorderColor: =RGBA(0, 18, 107, 1)
+                  DisplayMode: =DisplayMode.View
+                  FillPortions: =
+                  Height: =Parent.Height
+                  Image: ='ChatGPT Image Sep 16, 2025, 10_22_10 AM'
+                  ImagePosition: =ImagePosition.Fill
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  LayoutMinHeight: =32
+                  LayoutMinWidth: =0
+                  TabIndex: =0
+                  Width: =90
+            - Rectangle8:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =Color.Transparent
+                  HoverFill: =Color.Transparent
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  PressedFill: =Color.Transparent
+                  Width: =If(App.ActiveScreen.Name = "scrHome", 105, 15)
+            - Container5:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.End
+                  LayoutMaxHeight: =
+                  LayoutMaxWidth: =
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                Children:
+                  - Container2_2:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.End
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinHeight: =32
+                        LayoutMinWidth: =32
+                        PaddingRight: =10
+                        Width: =200
+                        X: =
+                      Children:
+                        - TextCanvas1_6:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.Start
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Height: =24
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinWidth: =0
+                              Size: =17
+                              Text: |-
+                                =Switch(
+                                                        App.ActiveScreen.Name,
+                                                        "scrHome", "Funds",
+                                                        "scrPO", "Purchase Orders",
+                                                        "scrPO_Detail", "Purchase Order Details",
+                                                        "scrJobs", "Jobs",
+                                                        "scrTargets", "Targets",
+                                                        "scrFund_Detail", "Fund Details",
+                                                        "scrFund_Jobs", "Fund Jobs",
+                                                        "scrFundJob_Detail_New", "Fund-Job Details",
+                                                        "scrBrandsDivisions", "Divisions and Brands",
+                                                        "scrPriorPeriodAdjustments", "Prior Period Adjustments",
+                                                        "scrReports", "Reports",
+                                                        ""
+                                                    )
+                              Weight: ='TextCanvas.Weight'.Bold
+                              Width: =Parent.Width
+                        - TextCanvas1_7:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.Start
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Height: =24
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinWidth: =0
+                              Text: |
+                                =Switch(
+                                                        App.ActiveScreen.Name,
+                                                        "scrHome", "View and manage all your funds in one central place. Create new funds, track financials, and manage jobs.",
+                                                        "scrPO", "View and manage the purchase orders.",
+                                                        "scrPO_Detail", "View and manage purchase order details including allocations and line items.",
+                                                        "scrJobs", "View and manage all your jobs in one central place.",
+                                                        "scrTargets", "View and manage all your targets in one central place.",
+                                                        "scrFund_Detail", "View and manage Fund details such as financials and jobs.",
+                                                        "scrFund_Jobs", "View all fund-job relationships and their financial details.",
+                                                        "scrFundJob_Detail_New", "View and manage Fund_Job details such as PO's and Cost Line items.",
+                                                        "scrBrandsDivisions", "View and manage Divisions and Brands.",
+                                                        "scrPriorPeriodAdjustments", "View and manage Prior Period Adjustments.",
+                                                        "scrReports", "View Reports for Mosaic",
+                                                        ""
+                                                    )
+                              Weight: ='TextCanvas.Weight'.Regular
+                              Width: =Parent.Width
+                  - Container2_1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        LayoutAlignItems: =LayoutAlignItems.End
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        LayoutMinHeight: =32
+                        LayoutMinWidth: =32
+                        PaddingRight: =10
+                        Width: =200
+                      Children:
+                        - TextCanvas1_2:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.End
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Height: =24
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinWidth: =0
+                              Size: =12
+                              Text: =User().FullName
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =Parent.Width
+                        - TextCanvas1_3:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.End
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Height: =24
+                              LayoutMaxHeight: =
+                              LayoutMaxWidth: =
+                              LayoutMinWidth: =0
+                              Size: =12
+                              Text: |+
+                                =Office365Users.MyProfileV2().jobTitle
+                              Weight: ='TextCanvas.Weight'.Regular
+                              Width: =Parent.Width
+                  - Avatar1_1:
+                      Control: Avatar@1.0.40
+                      Properties:
+                        AccessibleLabel: ="User profile picture"
+                        AlignInContainer: =AlignInContainer.Center
+                        Badge: ='Avatar.Badge'.None
+                        Height: =48
+                        Image: =Office365Users.UserPhotoV2(User().Email)
+                        LayoutMaxHeight: =
+                        LayoutMaxWidth: =
+                        Width: =48
+      - ButtonCanvas3:
+          Control: Button@0.0.45
+          Properties:
+            Appearance: ='ButtonCanvas.Appearance'.Transparent
+            BorderRadius: =24
+            Height: =48
+            Icon: =Blank()
+            Layout: ='ButtonCanvas.Layout'.IconOnly
+            OnSelect: =Set(varShowUserCtx,!varShowUserCtx)
+            Text: =
+            Width: =48
+            X: =Parent.Width-Self.Width-10
+            Y: =6
