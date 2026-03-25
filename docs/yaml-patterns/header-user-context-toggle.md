@@ -1,30 +1,30 @@
 # Header Pattern: Contextual Screen Header with User Profile
 
 ## Summary
-This pattern defines a reusable `comHeader` Canvas component that combines app navigation, dynamic screen titles/descriptions, and user context (name, title, avatar).
+Reusable `comHeader` pattern for a top app bar that combines back navigation, dynamic screen title/description mappings, and signed-in user profile context.
 
 ## Use case
-Use this component at the top of screens when you want a single header pattern that:
-- shows back navigation except on home,
-- shows per-screen title/description text,
-- shows signed-in user identity details.
+Use for multi-screen Canvas apps that need a single standardized header with:
+- conditional back navigation,
+- centralized screen metadata text,
+- user identity details (name, title, avatar).
 
-## Inputs and assumptions
-- `varShowUserCtx` controls expanded/collapsed header height.
-- `varTheme.Main.BackgroundColor` is available for theming.
-- Office 365 Users connector is configured for `MyProfileV2()` and `UserPhotoV2(...)`.
-- Screen names used in `Switch(...)` match your app (`scrHome`, `scrPO`, `scrReports`, etc.).
+## Inputs
+- Boolean context variable `varShowUserCtx` to toggle compact/expanded header state.
+- Theme object values such as `varTheme.Main.BackgroundColor`.
+- Office 365 Users connector for `MyProfileV2()` and `UserPhotoV2(...)`.
+- Valid screen-name mapping in `Switch(App.ActiveScreen.Name, ...)`.
 
-## Behaviour
-- Header height toggles between `60` and `312` via `varShowUserCtx`.
-- Back button appears on all screens except `scrHome`.
-- Title and description text are selected from `Switch(App.ActiveScreen.Name, ...)` mappings.
-- User full name, job title, and avatar are rendered from user/context functions.
+## Outputs/behavior
+- Header height toggles between compact and expanded states.
+- Back button is hidden on home and shown on non-home screens.
+- Title and description are selected from screen-name `Switch(...)` mappings.
+- User name, job title, and avatar render from profile connector calls.
 
-## Constraints and notes
-- Current title/description mappings are static in the component and should be updated as screens evolve.
-- Component references a specific image asset (`'ChatGPT Image Sep 16, 2025, 10_22_10 AM'`).
-- Several layout fields are intentionally blank to reflect Canvas export format.
+## Constraints
+- `Switch(...)` mappings are static and must be updated as screens change.
+- The sample references a specific image asset name and app-specific theme variables.
+- Blank layout fields are intentionally preserved from Canvas YAML export format.
 
-## Example file
+## Example file path
 - `examples/yaml/navigation/header-user-context-toggle.yaml`
