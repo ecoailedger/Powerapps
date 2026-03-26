@@ -1,0 +1,502 @@
+Screens:
+  scr_WorkspaceView:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+      OnVisible: |-
+        =Set(gblInboxFilter, "All");
+        Set(gblInboxSearch, "");
+        Set(gblShowReplyComposer, false);
+        Set(gblShowPipedrivePanel, false);
+        Set(gblPipedrivePanelMode, "create");
+        Set(gblLinkedDeal, Blank());
+        Set(gblCurrentView, "email");
+        Set(gblCurrentFolderPath, "Inbox");
+        ClearCollect(
+            colInboxEmails,
+            Office365Outlook.GetEmails(
+                {
+                    folderPath: gblCurrentFolderPath,
+                    top: 50,
+                    fetchOnlyUnread: false,
+                    includeAttachments: false
+                }
+            )
+        );
+        Set(gblSelectedEmail, First(colInboxEmails));
+        ClearCollect(
+            colPipelineStages,
+            Table(
+                {id: 1,  name: "CR Initial enquiry & Fact finding",  pipeline_name: "Customer returns"},
+                {id: 2,  name: "CR Awaiting authorisation",          pipeline_name: "Customer returns"},
+                {id: 3,  name: "CR Authorised",                      pipeline_name: "Customer returns"},
+                {id: 4,  name: "CR Collection raised & issued",      pipeline_name: "Customer returns"},
+                {id: 5,  name: "CR Goods back at Warehouse",         pipeline_name: "Customer returns"},
+                {id: 6,  name: "CR Credit raised",                   pipeline_name: "Customer returns"},
+                {id: 7,  name: "VR Initial vendor contact",          pipeline_name: "Vendor returns"},
+                {id: 8,  name: "VR Awaiting authorisation",          pipeline_name: "Vendor returns"},
+                {id: 9,  name: "VR Authorised",                      pipeline_name: "Vendor returns"},
+                {id: 10, name: "VR Stock transfer raised",           pipeline_name: "Vendor returns"},
+                {id: 11, name: "VR Goods shipped/collected",         pipeline_name: "Vendor returns"},
+                {id: 12, name: "VR Credit note received",            pipeline_name: "Vendor returns"},
+                {id: 13, name: "RR Initial Vendor Contact",          pipeline_name: "Repair Returns"},
+                {id: 14, name: "RR Awaiting Authorisation",          pipeline_name: "Repair Returns"},
+                {id: 15, name: "RR Authorised",                      pipeline_name: "Repair Returns"},
+                {id: 16, name: "RR Stock Transfer Raised",           pipeline_name: "Repair Returns"},
+                {id: 17, name: "RR Goods Shipped/Collected",         pipeline_name: "Repair Returns"},
+                {id: 18, name: "RR Goods returned back from Vendor", pipeline_name: "Repair Returns"},
+                {id: 19, name: "RR Goods shipped back to customer",  pipeline_name: "Repair Returns"},
+                {id: 20, name: "Graded Stock Initial Investigation", pipeline_name: "Graded Stock"},
+                {id: 21, name: "Graded Stock Decision Made",         pipeline_name: "Graded Stock"}
+            )
+        )
+    Children:
+      - vcon_appShell:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            Width: =Parent.Width
+          Children:
+            - hcon_topBar:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(15, 23, 42, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  PaddingLeft: =16
+                  PaddingRight: =16
+                Children:
+                  - lbl_logo:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(255, 255, 255, 1)
+                        Size: =18
+                        Text: ="📬  PipeMailer Workspace"
+                        VerticalAlign: =VerticalAlign.Middle
+                        Weight: ='TextCanvas.Weight'.Bold
+                        Width: =220
+                  - txt_search:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        BorderColor: =RGBA(71, 85, 105, 1)
+                        Default: =gblInboxSearch
+                        Fill: =RGBA(30, 41, 59, 1)
+                        FillPortions: =1
+                        HintText: ="Search emails…"
+                        HoverBorderColor: =RGBA(147, 197, 253, 1)
+                        OnChange: =Set(gblInboxSearch, Self.Text)
+                  - lbl_emailCount:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(148, 163, 184, 1)
+                        Size: =12
+                        Text: =Text(CountRows(colInboxEmails)) & " emails"
+                        VerticalAlign: =VerticalAlign.Middle
+                        Width: =90
+                  - btn_refresh:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Secondary
+                        Icon: ="ArrowSync"
+                        Layout: ='ButtonCanvas.Layout'.IconOnly
+                        OnSelect: |-
+                          =ClearCollect(
+                              colInboxEmails,
+                              Office365Outlook.GetEmails(
+                                  {
+                                      folderPath: gblCurrentFolderPath,
+                                      top: 50,
+                                      fetchOnlyUnread: false,
+                                      includeAttachments: false
+                                  }
+                              )
+                          );
+                          Set(gblSelectedEmail, First(colInboxEmails))
+                        Text: ="Refresh"
+                        Width: =40
+            - hcon_body:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  LayoutDirection: =LayoutDirection.Horizontal
+                Children:
+                  - vcon_emailList:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        Width: =380
+                      Children:
+                        - hcon_filterChips:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(248, 250, 252, 1)
+                              FillPortions: =0
+                              Height: =48
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                            Children:
+                              - btn_filterAll:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: =If(gblInboxFilter = "All", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                    OnSelect: =Set(gblInboxFilter, "All")
+                                    Text: ="All"
+                                    Width: =60
+                              - btn_filterUnread:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: =If(gblInboxFilter = "Unread", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                    OnSelect: =Set(gblInboxFilter, "Unread")
+                                    Text: ="Unread"
+                                    Width: =74
+                              - btn_filterFlagged:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: =If(gblInboxFilter = "Flagged", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                    OnSelect: =Set(gblInboxFilter, "Flagged")
+                                    Text: ="Flagged"
+                                    Width: =76
+                              - lbl_unreadCount:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.End
+                                    FillPortions: =1
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Size: =11
+                                    Text: =Text(CountIf(colInboxEmails, IsRead = false)) & " unread"
+                        - gal_emails:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              Items: |-
+                                =Filter(
+                                    colInboxEmails,
+                                    (gblInboxFilter = "All") Or
+                                    (gblInboxFilter = "Unread" And IsRead = false) Or
+                                    (gblInboxFilter = "Flagged" And Icon.Flag = "Flagged"),
+                                    IsBlank(gblInboxSearch) Or
+                                    (gblInboxSearch in Subject) Or
+                                    (gblInboxSearch in From)
+                                )
+                              TemplatePadding: =0
+                              TemplateSize: =86
+                            Children:
+                              - rec_rowBg:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =If(ThisItem.Id = gblSelectedEmail.Id, RGBA(239, 246, 255, 1), If(Not(ThisItem.IsRead), RGBA(252, 253, 255, 1), RGBA(255, 255, 255, 1)))
+                                    Height: =Parent.TemplateHeight
+                                    Width: =Parent.TemplateWidth
+                              - lbl_from:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(15, 23, 42, 1)
+                                    Size: =13
+                                    Text: =ThisItem.From
+                                    Weight: =If(Not(ThisItem.IsRead), 'TextCanvas.Weight'.Bold, 'TextCanvas.Weight'.Regular)
+                                    Width: =220
+                                    X: =12
+                                    Y: =10
+                              - lbl_date:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.End
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Size: =11
+                                    Text: =Text(ThisItem.DateTimeReceived, "dd mmm")
+                                    Width: =110
+                                    X: =256
+                                    Y: =10
+                              - lbl_subject:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(51, 65, 85, 1)
+                                    Size: =12
+                                    Text: =ThisItem.Subject
+                                    Weight: =If(Not(ThisItem.IsRead), 'TextCanvas.Weight'.Semibold, 'TextCanvas.Weight'.Regular)
+                                    Width: =350
+                                    X: =12
+                                    Y: =30
+                              - lbl_preview:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Size: =11
+                                    Text: =ThisItem.BodyPreview
+                                    Width: =350
+                                    X: =12
+                                    Y: =50
+                              - btn_select:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Transparent
+                                    Height: =Parent.TemplateHeight
+                                    OnSelect: |-
+                                      =Set(gblSelectedEmail, ThisItem);
+                                      Set(gblShowReplyComposer, false);
+                                      If(
+                                          Not(ThisItem.IsRead),
+                                          Office365Outlook.MarkAsRead(ThisItem.Id);
+                                          Patch(colInboxEmails, ThisItem, {IsRead: true})
+                                      )
+                                    Text: =""
+                                    Width: =Parent.TemplateWidth
+                  - rect_divider:
+                      Control: Rectangle@2.3.0
+                      Properties:
+                        Fill: =RGBA(226, 232, 240, 1)
+                        Height: =Parent.Height
+                        Width: =1
+                  - vcon_rightPanel:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(255, 255, 255, 1)
+                        LayoutDirection: =LayoutDirection.Vertical
+                        PaddingBottom: =16
+                        PaddingLeft: =20
+                        PaddingRight: =20
+                        PaddingTop: =16
+                      Children:
+                        - lbl_subjectHeader:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(15, 23, 42, 1)
+                              Size: =18
+                              Text: =Coalesce(gblSelectedEmail.Subject, "Select an email")
+                              Weight: ='TextCanvas.Weight'.Bold
+                        - hcon_actions:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              FillPortions: =0
+                              Height: =40
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                            Children:
+                              - btn_reply:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    BasePaletteColor: =RGBA(59, 130, 246, 1)
+                                    Icon: ="Reply"
+                                    OnSelect: =Set(gblShowReplyComposer, true)
+                                    Text: ="Reply"
+                              - btn_openPipedrive:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: =If(gblShowPipedrivePanel, 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                    OnSelect: =Set(gblShowPipedrivePanel, Not(gblShowPipedrivePanel))
+                                    Text: ="Pipedrive"
+                              - btn_delete:
+                                  Control: Button@0.0.45
+                                  Properties:
+                                    Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                    Icon: ="Delete"
+                                    OnSelect: |-
+                                      =Office365Outlook.DeleteEmail(gblSelectedEmail.Id);
+                                      Remove(colInboxEmails, gblSelectedEmail);
+                                      Set(gblSelectedEmail, First(colInboxEmails))
+                                    Text: ="Delete"
+                        - lbl_meta:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(100, 116, 139, 1)
+                              Size: =12
+                              Text: |-
+                                ="From: " & gblSelectedEmail.From & "  |  " & Text(gblSelectedEmail.DateTimeReceived, "dd mmm yyyy HH:mm")
+                              Visible: =Not(IsBlank(gblSelectedEmail))
+                        - lbl_bodyPreview:
+                            Control: Text@0.0.51
+                            Properties:
+                              FillPortions: =1
+                              FontColor: =RGBA(51, 65, 85, 1)
+                              Size: =13
+                              Text: =gblSelectedEmail.BodyPreview
+                              VerticalAlign: =VerticalAlign.Top
+                              Visible: =Not(IsBlank(gblSelectedEmail))
+                        - con_replyComposer:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(248, 250, 252, 1)
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingBottom: =10
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =12
+                              Visible: =gblShowReplyComposer And Not(IsBlank(gblSelectedEmail))
+                            Children:
+                              - txt_replyBody:
+                                  Control: Classic/TextInput@2.3.2
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Height: =120
+                                    HintText: ="Write your reply…"
+                                    Mode: =TextMode.MultiLine
+                              - hcon_replyActions:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Height: =36
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                  Children:
+                                    - btn_cancelReply:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          OnSelect: |-
+                                            =Set(gblShowReplyComposer, false);
+                                            Reset(txt_replyBody)
+                                          Text: ="Cancel"
+                                    - btn_sendReply:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          BasePaletteColor: =RGBA(59, 130, 246, 1)
+                                          OnSelect: |-
+                                            =If(
+                                                IsBlank(txt_replyBody.Text),
+                                                Notify("Reply cannot be empty.", NotificationType.Warning),
+                                                Office365Outlook.ReplyToV3(gblSelectedEmail.Id, {Comment: txt_replyBody.Text});
+                                                Notify("Reply sent.", NotificationType.Success);
+                                                Set(gblShowReplyComposer, false);
+                                                Reset(txt_replyBody)
+                                            )
+                                          Text: ="Send"
+                        - con_pipedrivePanel:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(240, 249, 255, 1)
+                              FillPortions: =0
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              PaddingBottom: =10
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =10
+                              Visible: =gblShowPipedrivePanel And Not(IsBlank(gblSelectedEmail))
+                            Children:
+                              - hcon_pdModes:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    FillPortions: =0
+                                    Height: =34
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                  Children:
+                                    - btn_pdCreateMode:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: =If(gblPipedrivePanelMode = "create", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                          OnSelect: =Set(gblPipedrivePanelMode, "create")
+                                          Text: ="Create Deal"
+                                    - btn_pdUpdateMode:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: =If(gblPipedrivePanelMode = "update", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
+                                          OnSelect: =Set(gblPipedrivePanelMode, "update")
+                                          Text: ="Update Deal"
+                              - con_pdCreate:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    Visible: =gblPipedrivePanelMode = "create"
+                                  Children:
+                                    - txt_pdDealTitle:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          Default: =gblSelectedEmail.Subject
+                                          HintText: ="Deal title"
+                                    - txt_pdDealValue:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          Default: ="0"
+                                          HintText: ="Deal value (£)"
+                                    - drp_pdCreateStage:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          Items: =colPipelineStages
+                                          Items.Value: =name
+                                    - btn_pdCreate:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          BasePaletteColor: =RGBA(59, 130, 246, 1)
+                                          OnSelect: |-
+                                            =If(
+                                                IsBlank(txt_pdDealTitle.Text),
+                                                Notify("Deal title is required.", NotificationType.Warning),
+                                                Pipedrive.AddDealV2(
+                                                    txt_pdDealTitle.Text,
+                                                    {
+                                                        stage_id: Text(drp_pdCreateStage.Selected.id),
+                                                        value: Value(txt_pdDealValue.Text),
+                                                        currency: "GBP"
+                                                    }
+                                                );
+                                                Notify("Deal created.", NotificationType.Success)
+                                            )
+                                          Text: ="Create Deal"
+                              - con_pdUpdate:
+                                  Control: GroupContainer@1.5.0
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    Visible: =gblPipedrivePanelMode = "update"
+                                  Children:
+                                    - txt_pdDealId:
+                                        Control: Classic/TextInput@2.3.2
+                                        Properties:
+                                          HintText: ="Pipedrive Deal ID"
+                                    - btn_pdFetchDeal:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          OnSelect: |-
+                                            =If(
+                                                IsBlank(txt_pdDealId.Text),
+                                                Notify("Enter a Deal ID.", NotificationType.Warning),
+                                                Set(gblLinkedDeal, Pipedrive.GetDeal(Value(txt_pdDealId.Text)))
+                                            )
+                                          Text: ="Fetch"
+                                    - drp_pdUpdateStage:
+                                        Control: Classic/DropDown@2.3.1
+                                        Properties:
+                                          Items: =colPipelineStages
+                                          Items.Value: =name
+                                          Visible: =Not(IsBlank(gblLinkedDeal))
+                                    - btn_pdUpdateStage:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          BasePaletteColor: =RGBA(59, 130, 246, 1)
+                                          OnSelect: |-
+                                            =Pipedrive.UpdateDealStageV2(
+                                                gblLinkedDeal.id,
+                                                Text(gblLinkedDeal.pipeline_id),
+                                                Text(drp_pdUpdateStage.Selected.id)
+                                            );
+                                            Notify("Deal stage updated.", NotificationType.Success)
+                                          Text: ="Update Stage"
+                                          Visible: =Not(IsBlank(gblLinkedDeal))
