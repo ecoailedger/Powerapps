@@ -3,8 +3,7 @@ Screens:
     Properties:
       Fill: =RGBA(242, 244, 248, 1)
       OnVisible: |+
-        =UpdateContext({ctxActiveTab: "Thread", ctxReplyBody: ""});
-        Set(gblKanbanCreateMode, false);
+        =UpdateContext({ctxActiveTab: "Thread", ctxReplyBody: "", ctxKanbanCreateMode: false});
         If(
             IsBlank(gblCurrentView),
             Set(gblCurrentView, "email");
@@ -159,11 +158,11 @@ Screens:
                   PaddingRight: =16
                 Children:
                   - drp_pipelineFilter:
-                      Control: Dropdown@0.0.44
+                      Control: ComboBox@0.0.51
                       Properties:
-                        Default: '=gblSelectedPipelineName'
-                        Items: '=["Customer returns", "Vendor returns", "Repair Returns"]'
-                        OnChange: '=Set(gblSelectedPipelineName, Self.Selected.Value)'
+                        DefaultSelectedItems: =Table({Value: gblSelectedPipelineName})
+                        Items: =Distinct(colPipelineStages, pipeline_name)
+                        OnChange: =Set(gblSelectedPipelineName, Self.Selected.Value)
                         Width: =220
                   - txt_pipelineSearch:
                       Control: Classic/TextInput@2.3.2
@@ -176,10 +175,7 @@ Screens:
                       Control: Button@0.0.45
                       Properties:
                         BasePaletteColor: =RGBA(59, 130, 246, 1)
-                        OnSelect: |-
-                          =Set(gblKanbanCreateMode, true);
-                          Set(gblKanbanSelectedCard, Blank());
-                          Set(gblShowKanbanPanel, true)
+                        OnSelect: =UpdateContext({ctxKanbanCreateMode: true}); Set(gblKanbanSelectedCard, Blank()); Set(gblShowKanbanPanel, true)
                         Text: ="+ New Card"
                         Width: =110
             - gal_pipelineColumns:
@@ -231,10 +227,7 @@ Screens:
                             Properties:
                               Appearance: ='ButtonCanvas.Appearance'.Transparent
                               Height: =Parent.TemplateHeight
-                              OnSelect: |-
-                                =Set(gblKanbanCreateMode, false);
-                                Set(gblKanbanSelectedCard, ThisItem);
-                                Set(gblShowKanbanPanel, true)
+                              OnSelect: =UpdateContext({ctxKanbanCreateMode: false}); Set(gblKanbanSelectedCard, ThisItem); Set(gblShowKanbanPanel, true)
                               Text: =""
                               Width: =Parent.TemplateWidth
                         - lbl_cardTitle:
@@ -310,7 +303,7 @@ Screens:
                   - drp_kPriority:
                       Control: ComboBox@0.0.51
                       Properties:
-                        Items: '=Table({Value: "High"}, {Value: "Medium"}, {Value: "Low"})'
+                        Items: =Table({Value: "High"}, {Value: "Medium"}, {Value: "Low"})
                   - txt_kValue:
                       Control: Classic/TextInput@2.3.2
                       Properties:
@@ -328,7 +321,7 @@ Screens:
                         OnSelect: |-
                           =Patch(
                               'ACE Kanban',
-                              If(gblKanbanCreateMode, Defaults('ACE Kanban'), LookUp('ACE Kanban', id = gblKanbanSelectedCard.id)),
+                              If(ctxKanbanCreateMode, Defaults('ACE Kanban'), LookUp('ACE Kanban', id = gblKanbanSelectedCard.id)),
                               {
                                   title: txt_kTitle.Text,
                                   owner: txt_kOwner.Text,
@@ -483,7 +476,7 @@ Screens:
           Control: ComboBox@0.0.51
           Properties:
             Items: =colMacroTemplates
-            OnChange: '=UpdateContext({ctxReplyBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})'
+            OnChange: =UpdateContext({ctxReplyBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})
             PlaceholderText: ="Insert template…"
             Visible: =gblShowReplyComposer
 
@@ -562,7 +555,7 @@ Screens:
                 Control: ComboBox@0.0.51
                 Properties:
                   Items: =colMacroTemplates
-                  OnChange: '=UpdateContext({ctxComposeBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})'
+                  OnChange: =UpdateContext({ctxComposeBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})
             - txt_composeBody:
                 Control: Classic/TextInput@2.3.2
                 Properties:
@@ -661,15 +654,15 @@ Screens:
             - drp_reason:
                 Control: ComboBox@0.0.51
                 Properties:
-                  Items: '=Table({Value: "Damaged"}, {Value: "Wrong item"}, {Value: "Not as described"}, {Value: "Change of mind"}, {Value: "Vendor fault"})'
+                  Items: =Table({Value: "Damaged"}, {Value: "Wrong item"}, {Value: "Not as described"}, {Value: "Change of mind"}, {Value: "Vendor fault"})
             - drp_condition:
                 Control: ComboBox@0.0.51
                 Properties:
-                  Items: '=Table({Value: "New"}, {Value: "Open box"}, {Value: "Damaged"})'
+                  Items: =Table({Value: "New"}, {Value: "Open box"}, {Value: "Damaged"})
             - drp_disposition:
                 Control: ComboBox@0.0.51
                 Properties:
-                  Items: '=Table({Value: "Credit"}, {Value: "Replace"}, {Value: "Repair"}, {Value: "Reject"})'
+                  Items: =Table({Value: "Credit"}, {Value: "Replace"}, {Value: "Repair"}, {Value: "Reject"})
             - txt_refund:
                 Control: Classic/TextInput@2.3.2
                 Properties:
