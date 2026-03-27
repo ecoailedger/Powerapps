@@ -1,0 +1,695 @@
+Screens:
+  scr_WorkspaceView:
+    Properties:
+      Fill: =RGBA(242, 244, 248, 1)
+      OnVisible: |+
+        =UpdateContext({ctxActiveTab: "Thread", ctxReplyBody: ""});
+        Set(gblKanbanCreateMode, false);
+        If(
+            IsBlank(gblCurrentView),
+            Set(gblCurrentView, "email");
+            Set(gblThemeMode, "light");
+            Set(gblActorName, User().FullName);
+            Set(gblSelectedFolder, "inbox");
+            Set(gblSelectedQueue, "all");
+            Set(gblSelectedAssigneeFilter, "all");
+            Set(gblSearchText, "");
+            Set(gblKanbanSearchText, "");
+            Set(gblSelectedPipelineName, "Customer returns");
+            Set(gblShowReplyComposer, false);
+            Set(gblShowComposePopup, false);
+            Set(gblShowDealPopup, false);
+            Set(gblShowKanbanPanel, false);
+            Set(gblToastVisible, false);
+            Set(gblToastMessage, "")
+        );
+        ClearCollect(colAssignees, Assignees);
+        If(
+            IsEmpty(colAssignees),
+            ClearCollect(
+                colAssignees,
+                Table(
+                    {id: "u1", name: "Alex Parker", email: "alex@contoso.com"},
+                    {id: "u2", name: "Mia Patel", email: "mia@contoso.com"},
+                    {id: "u3", name: "Jordan Lee", email: "jordan@contoso.com"}
+                )
+            )
+        );
+        Set(gblCurrentUserId, Coalesce(LookUp(colAssignees, email = User().Email, id), "u1"));
+        ClearCollect(colMacroTemplates, Filter(MacroTemplates, isArchived = false));
+        If(
+            IsEmpty(colMacroTemplates),
+            ClearCollect(
+                colMacroTemplates,
+                Table(
+                    {name: "Request photos", body: "Please share clear photos of the item and packaging so we can validate the return."},
+                    {name: "Approved return", body: "Thanks for your patience. Your return is approved and collection details will follow shortly."},
+                    {name: "Awaiting vendor", body: "We are currently waiting for vendor confirmation and will update you within one business day."}
+                )
+            )
+        );
+        ClearCollect(colPipelineStages, PipelineStages);
+        If(
+            IsEmpty(colPipelineStages),
+            ClearCollect(
+                colPipelineStages,
+                Table(
+                    {id: 1, Value: "CR 1 - Intake", pipeline_name: "Customer returns"},
+                    {id: 2, Value: "CR 2 - Validate", pipeline_name: "Customer returns"},
+                    {id: 3, Value: "CR 3 - Authorise", pipeline_name: "Customer returns"},
+                    {id: 4, Value: "CR 4 - Collection", pipeline_name: "Customer returns"},
+                    {id: 5, Value: "CR 5 - Warehouse", pipeline_name: "Customer returns"},
+                    {id: 6, Value: "CR 6 - Closed", pipeline_name: "Customer returns"},
+                    {id: 7, Value: "VR 1 - Open", pipeline_name: "Vendor returns"},
+                    {id: 8, Value: "VR 2 - Await RMA", pipeline_name: "Vendor returns"},
+                    {id: 9, Value: "VR 3 - Booked", pipeline_name: "Vendor returns"},
+                    {id: 10, Value: "VR 4 - Collected", pipeline_name: "Vendor returns"},
+                    {id: 11, Value: "VR 5 - Credit", pipeline_name: "Vendor returns"},
+                    {id: 12, Value: "VR 6 - Done", pipeline_name: "Vendor returns"},
+                    {id: 13, Value: "RR 1 - Open", pipeline_name: "Repair Returns"},
+                    {id: 14, Value: "RR 2 - Triage", pipeline_name: "Repair Returns"},
+                    {id: 15, Value: "RR 3 - Vendor", pipeline_name: "Repair Returns"},
+                    {id: 16, Value: "RR 4 - In Repair", pipeline_name: "Repair Returns"},
+                    {id: 17, Value: "RR 5 - QA", pipeline_name: "Repair Returns"},
+                    {id: 18, Value: "RR 6 - Return", pipeline_name: "Repair Returns"},
+                    {id: 19, Value: "RR 7 - Closed", pipeline_name: "Repair Returns"}
+                )
+            )
+        );
+        ClearCollect(colEmails, SortByColumns(Filter(Emails, folder = gblSelectedFolder), "receivedAt", SortOrder.Descending));
+        If(
+            IsEmpty(colEmails),
+            ClearCollect(
+                colEmails,
+                Table(
+                    {id: "e001", from: "customer@acmecorp.com", subject: "Return request - Order #45201", snippet: "Hi, the unit arrived damaged and I'd like to return it.", folder: "inbox", isRead: false, priority: "high", computedSlaStatus: "atRisk", assigneeId: Blank(), receivedAt: Now()-0.5, resolutionDueAt: Now()+1, dealId: Blank(), approvalStatus: "none", outlookId: Blank()},
+                    {id: "e002", from: "vendor@techsupply.co.uk", subject: "RMA Authorisation #V-223", snippet: "Please find the vendor RMA attached. Collection booked for Friday.", folder: "inbox", isRead: true, priority: "medium", computedSlaStatus: "onTrack", assigneeId: "u1", receivedAt: Now()-1, resolutionDueAt: Now()+2, dealId: "d1", approvalStatus: "approved", outlookId: Blank()},
+                    {id: "e003", from: "accounts@midwich.com", subject: "Credit note CN-8812 issued", snippet: "Credit note for £1,250 has been raised against order #45201.", folder: "inbox", isRead: false, priority: "low", computedSlaStatus: "onTrack", assigneeId: Blank(), receivedAt: Now()-2, resolutionDueAt: Now()+3, dealId: Blank(), approvalStatus: "none", outlookId: Blank()}
+                )
+            )
+        );
+        ClearCollect(colDeals, Deals);
+        If(
+            IsEmpty(colDeals),
+            ClearCollect(colDeals, Table({id: "d1", title: "Laptop return - ACME", stage: "CR 2 - Validate", value: 1250}, {id: "d2", title: "Monitor RMA", stage: "CR 3 - Authorise", value: 420}))
+        );
+        ClearCollect(colKanbanDeals, 'ACE Kanban');
+        If(
+            IsEmpty(colKanbanDeals),
+            ClearCollect(
+                colKanbanDeals,
+                Table(
+                    {id: "k1", title: "Order 45201 - Damaged", owner: "Alex Parker", stage_id: 1, priority: "High", value: 1250, updatedAt: Now()-0.2, notes: "Photos requested"},
+                    {id: "k2", title: "Order 44988 - Wrong item", owner: "Mia Patel", stage_id: 2, priority: "Medium", value: 390, updatedAt: Now()-1, notes: "Awaiting label"},
+                    {id: "k3", title: "Order 44770 - Vendor RMA", owner: "Jordan Lee", stage_id: 3, priority: "Low", value: 2200, updatedAt: Now()-1.5, notes: "RMA pending"},
+                    {id: "k4", title: "Order 44612 - No power", owner: "Alex Parker", stage_id: 4, priority: "High", value: 840, updatedAt: Now()-2, notes: "Collection booked"},
+                    {id: "k5", title: "Order 44445 - Cosmetic", owner: "Mia Patel", stage_id: 5, priority: "Medium", value: 510, updatedAt: Now()-3, notes: "In QA"},
+                    {id: "k6", title: "Order 44110 - Closed", owner: "Jordan Lee", stage_id: 6, priority: "Low", value: 180, updatedAt: Now()-4, notes: "Credited"}
+                )
+            )
+        );
+        ClearCollect(colEmailActivities, EmailActivities);
+        If(
+            IsEmpty(colEmailActivities),
+            ClearCollect(
+                colEmailActivities,
+                Table(
+                    {actor: "Alex Parker", activityType: "Assigned", body: "Assigned e001 to Alex Parker", at: Now()-0.1},
+                    {actor: "Mia Patel", activityType: "Reply", body: "Replied to vendor about RMA timings", at: Now()-0.6},
+                    {actor: "Jordan Lee", activityType: "Status", body: "Marked case as awaiting credit", at: Now()-1.2}
+                )
+            )
+        );
+        ClearCollect(colAssigneeFilters, Table({id: "all", name: "All assignees"}));
+        Collect(colAssigneeFilters, colAssignees);
+        Set(gblSelectedEmailId, Coalesce(First(colEmails).id, Blank()));
+        Set(gblSelectedDealId, Coalesce(First(colEmails).dealId, Blank()));
+        ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId));
+        If(
+            IsEmpty(colCurrentThread),
+            ClearCollect(
+                colCurrentThread,
+                Table(
+                    {emailId: "e001", from: "customer@acmecorp.com", at: Text(Now()-0.5, "yyyy-mm-ddTHH:mm:ssZ"), body: "My order arrived damaged. Please advise next steps.", direction: "inbound"},
+                    {emailId: "e001", from: "returns@pipemailer.com", at: Text(Now()-0.45, "yyyy-mm-ddTHH:mm:ssZ"), body: "Thanks for contacting us. Please share photos and serial number.", direction: "outbound"}
+                )
+            )
+        )
+
+    Children:
+      - con_pipelineView:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            Visible: =gblCurrentView = "pipeline"
+            Width: =Parent.Width
+          Children:
+            - hcon_pipelineTopBar:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  FillPortions: =0
+                  Height: =52
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =8
+                  PaddingLeft: =16
+                  PaddingRight: =16
+                Children:
+                  - drp_pipelineFilter:
+                      Control: Dropdown@0.0.44
+                      Properties:
+                        Default: =gblSelectedPipelineName
+                        Items: =["Customer returns", "Vendor returns", "Repair Returns"]
+                        OnChange: |-
+                          =Set(gblSelectedPipelineName, Self.Selected.Value)
+                        Width: =220
+                  - txt_pipelineSearch:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =gblKanbanSearchText
+                        HintText: ="Search cards..."
+                        OnChange: =Set(gblKanbanSearchText, Self.Text)
+                        Width: =260
+                  - btn_newCard:
+                      Control: Button@0.0.45
+                      Properties:
+                        BasePaletteColor: =RGBA(59, 130, 246, 1)
+                        OnSelect: |-
+                          =Set(gblKanbanCreateMode, true);
+                          Set(gblKanbanSelectedCard, Blank());
+                          Set(gblShowKanbanPanel, true)
+                        Text: ="+ New Card"
+                        Width: =110
+            - gal_pipelineColumns:
+                Control: Gallery@2.15.0
+                Variant: Horizontal
+                Properties:
+                  Items: =Filter(colPipelineStages, pipeline_name = gblSelectedPipelineName)
+                  TemplateSize: =260
+                Children:
+                  - lbl_colStage:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(30, 41, 59, 1)
+                        Text: =ThisItem.Value
+                        Weight: ='TextCanvas.Weight'.Bold
+                        X: =8
+                        Y: =8
+                  - lbl_colCount:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(71, 85, 105, 1)
+                        Text: =Text(CountIf(colKanbanDeals, stage_id = ThisItem.id))
+                        X: =210
+                        Y: =8
+                  - gal_stageCards:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =Parent.TemplateHeight - 42
+                        Items: =Filter(colKanbanDeals, stage_id = ThisItem.id, IsBlank(gblKanbanSearchText) Or gblKanbanSearchText in title)
+                        TemplateSize: =108
+                        Width: =244
+                        X: =8
+                        Y: =32
+                      Children:
+                        - rec_card:
+                            Control: Rectangle@2.3.0
+                            Properties:
+                              Fill: =RGBA(255, 255, 255, 1)
+                              Height: =Parent.TemplateHeight - 8
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Width: =Parent.TemplateWidth
+                              Y: =4
+                        - btn_cardSelect:
+                            Control: Button@0.0.45
+                            Properties:
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              Height: =Parent.TemplateHeight
+                              OnSelect: |-
+                                =Set(gblKanbanCreateMode, false);
+                                Set(gblKanbanSelectedCard, ThisItem);
+                                Set(gblShowKanbanPanel, true)
+                              Text: =""
+                              Width: =Parent.TemplateWidth
+                        - lbl_cardTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(15, 23, 42, 1)
+                              Text: =ThisItem.title
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =220
+                              X: =10
+                              Y: =10
+                        - lbl_cardOwner:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(100, 116, 139, 1)
+                              Size: =11
+                              Text: =ThisItem.owner
+                              X: =10
+                              Y: =34
+                        - lbl_cardPriority:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =Switch(ThisItem.priority, "High", RGBA(153, 27, 27, 1), "Medium", RGBA(133, 77, 14, 1), RGBA(75, 85, 99, 1))
+                              Size: =11
+                              Text: =ThisItem.priority
+                              X: =10
+                              Y: =54
+                        - lbl_cardValue:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(30, 64, 175, 1)
+                              Size: =11
+                              Text: =Text(ThisItem.value, "£#,##0")
+                              X: =88
+                              Y: =54
+                        - lbl_cardUpdated:
+                            Control: Text@0.0.51
+                            Properties:
+                              FontColor: =RGBA(148, 163, 184, 1)
+                              Size: =10
+                              Text: =Text(ThisItem.updatedAt, "dd mmm")
+                              X: =10
+                              Y: =74
+            - con_kanbanDetailPanel:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =Parent.Height
+                  LayoutDirection: =LayoutDirection.Vertical
+                  PaddingLeft: =12
+                  PaddingRight: =12
+                  RadiusBottomLeft: =10
+                  RadiusTopLeft: =10
+                  Visible: =gblShowKanbanPanel
+                  Width: =400
+                  X: =Parent.Width - Self.Width
+                Children:
+                  - txt_kTitle:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Coalesce(gblKanbanSelectedCard.title, "")
+                        HintText: ="Card title"
+                  - txt_kOwner:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Coalesce(gblKanbanSelectedCard.owner, "")
+                        HintText: ="Owner"
+                  - drp_kStage:
+                      Control: ComboBox@0.0.51
+                      Properties:
+                        Items: =Filter(colPipelineStages, pipeline_name = gblSelectedPipelineName)
+                  - drp_kPriority:
+                      Control: ComboBox@0.0.51
+                      Properties:
+                        Items: =Table({Value: "High"}, {Value: "Medium"}, {Value: "Low"})
+                  - txt_kValue:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Text(Coalesce(gblKanbanSelectedCard.value, 0))
+                  - txt_kNotes:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Coalesce(gblKanbanSelectedCard.notes, "")
+                        Height: =120
+                        Mode: =TextMode.MultiLine
+                  - btn_kSave:
+                      Control: Button@0.0.45
+                      Properties:
+                        BasePaletteColor: =RGBA(59, 130, 246, 1)
+                        OnSelect: |-
+                          =Patch(
+                              'ACE Kanban',
+                              If(gblKanbanCreateMode, Defaults('ACE Kanban'), LookUp('ACE Kanban', id = gblKanbanSelectedCard.id)),
+                              {
+                                  title: txt_kTitle.Text,
+                                  owner: txt_kOwner.Text,
+                                  stage_id: drp_kStage.Selected.id,
+                                  priority: drp_kPriority.Selected.Value,
+                                  value: Value(txt_kValue.Text),
+                                  notes: txt_kNotes.Text,
+                                  updatedAt: Now()
+                              }
+                          );
+                          ClearCollect(colKanbanDeals, 'ACE Kanban');
+                          Set(gblToastMessage, "Card saved");
+                          Set(gblToastVisible, true);
+                          Set(gblShowKanbanPanel, false)
+                        Text: ="Save"
+                  - btn_kClose:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Secondary
+                        OnSelect: =Set(gblShowKanbanPanel, false)
+                        Text: ="Close"
+
+      - con_dashboardView:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Height: =Parent.Height
+            LayoutDirection: =LayoutDirection.Vertical
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Visible: =gblCurrentView = "dashboard"
+            Width: =Parent.Width
+          Children:
+            - hcon_kpiRow:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  FillPortions: =0
+                  Height: =120
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                Children:
+                  - txt_kpiOpenEmails:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(30, 64, 175, 1)
+                        Size: =28
+                        Text: =Text(If(IsEmpty(colEmails), 14, CountIf(colEmails, Not(isRead))))
+                  - txt_kpiUnassigned:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(133, 77, 14, 1)
+                        Size: =28
+                        Text: =Text(If(IsEmpty(colEmails), 5, CountIf(colEmails, IsBlank(assigneeId))))
+                  - txt_kpiSlaRisk:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(153, 27, 27, 1)
+                        Size: =28
+                        Text: =Text(If(IsEmpty(colEmails), 3, CountIf(colEmails, computedSlaStatus = "atRisk" Or computedSlaStatus = "overdue")))
+                  - txt_kpiOpenDeals:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(13, 148, 136, 1)
+                        Size: =28
+                        Text: =Text(If(IsEmpty(colDeals), 8, CountRows(colDeals)))
+            - gal_stageBars:
+                Control: Gallery@2.15.0
+                Variant: Horizontal
+                Properties:
+                  FillPortions: =0
+                  Height: =200
+                  Items: =Filter(colPipelineStages, pipeline_name = "Customer returns")
+                  TemplateSize: =90
+                Children:
+                  - lbl_barCount:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.Center
+                        Text: =Text(CountIf(colKanbanDeals, stage_id = ThisItem.id))
+                        Width: =80
+                        X: =4
+                        Y: =8
+                  - rec_bar:
+                      Control: Rectangle@2.3.0
+                      Properties:
+                        Fill: =RGBA(59, 130, 246, 1)
+                        Height: =Max(8, Min(120, CountIf(colKanbanDeals, stage_id = ThisItem.id) * 20))
+                        Width: =36
+                        X: =24
+                        Y: =140 - Self.Height
+                  - lbl_barLabel:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.Center
+                        Size: =10
+                        Text: =ThisItem.Value
+                        Width: =80
+                        X: =4
+                        Y: =150
+            - gal_recentActivity:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  Items: =SortByColumns(colEmailActivities, "at", SortOrder.Descending)
+                  TemplateSize: =48
+                Children:
+                  - lbl_actActor:
+                      Control: Text@0.0.51
+                      Properties:
+                        Text: =ThisItem.actor & " · " & ThisItem.activityType
+                  - lbl_actBody:
+                      Control: Text@0.0.51
+                      Properties:
+                        FontColor: =RGBA(100, 116, 139, 1)
+                        Size: =11
+                        Text: =ThisItem.body
+                        Y: =20
+                  - lbl_actTs:
+                      Control: Text@0.0.51
+                      Properties:
+                        Align: ='TextCanvas.Align'.End
+                        FontColor: =RGBA(148, 163, 184, 1)
+                        Size: =10
+                        Text: =Text(ThisItem.at, "dd mmm HH:mm")
+                        Width: =120
+                        X: =Parent.TemplateWidth - 128
+            - lbl_noActivity:
+                Control: Text@0.0.51
+                Properties:
+                  FontColor: =RGBA(148, 163, 184, 1)
+                  Text: ="No activity yet."
+                  Visible: =IsEmpty(colEmailActivities)
+
+      - btn_folderSelectOverlay:
+          Control: Button@0.0.45
+          Properties:
+            Appearance: ='ButtonCanvas.Appearance'.Transparent
+            OnSelect: =Set(gblSelectedFolder, ThisItem.id)
+            Text: =""
+
+      - btn_queueSelectOverlay:
+          Control: Button@0.0.45
+          Properties:
+            Appearance: ='ButtonCanvas.Appearance'.Transparent
+            OnSelect: =Set(gblSelectedQueue, ThisItem.id)
+            Text: =""
+
+      - drp_replyTemplate:
+          Control: ComboBox@0.0.51
+          Properties:
+            Items: =colMacroTemplates
+            OnChange: =UpdateContext({ctxReplyBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})
+            PlaceholderText: ="Insert template…"
+            Visible: =gblShowReplyComposer
+
+      - txt_replyBody:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: =ctxReplyBody
+            Height: =80
+            Mode: =TextMode.MultiLine
+            Visible: =gblShowReplyComposer
+
+      - btn_sendReply:
+          Control: Button@0.0.45
+          Properties:
+            BasePaletteColor: =RGBA(59, 130, 246, 1)
+            OnSelect: |-
+              =If(
+                  IsBlank(LookUp(colEmails, id = gblSelectedEmailId, outlookId)),
+                  Office365Outlook.SendEmailV2(LookUp(colEmails, id = gblSelectedEmailId, from), "Re: " & LookUp(colEmails, id = gblSelectedEmailId, subject), txt_replyBody.Text),
+                  Office365Outlook.ReplyToV3(LookUp(colEmails, id = gblSelectedEmailId, outlookId), {Comment: txt_replyBody.Text})
+              );
+              Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {lastReplyAt: Now(), isRead: true});
+              Patch(EmailMessages, Defaults(EmailMessages), {emailId: gblSelectedEmailId, from: gblActorName, at: Text(Now(), "yyyy-mm-ddTHH:mm:ssZ"), body: txt_replyBody.Text, direction: "outbound"});
+              ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId));
+              Set(gblShowReplyComposer, false);
+              Set(gblToastMessage, "Reply sent.");
+              Set(gblToastVisible, true)
+            Text: ="Send"
+
+      - rec_composeBackdrop:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            Visible: =gblShowComposePopup
+            Width: =Parent.Width
+      - btn_composeDismiss:
+          Control: Button@0.0.45
+          Properties:
+            Appearance: ='ButtonCanvas.Appearance'.Transparent
+            Height: =Parent.Height
+            OnSelect: =Set(gblShowComposePopup, false)
+            Text: =""
+            Visible: =gblShowComposePopup
+            Width: =Parent.Width
+      - con_composeModal:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =420
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =8
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Visible: =gblShowComposePopup
+            Width: =640
+            X: =(Parent.Width - Self.Width)/2
+            Y: =(Parent.Height - Self.Height)/2
+          Children:
+            - txt_composeTo:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  HintText: ="To"
+            - txt_composeSubject:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  HintText: ="Subject"
+            - drp_composeTemplate:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =colMacroTemplates
+                  OnChange: =UpdateContext({ctxComposeBody: LookUp(colMacroTemplates, name = Self.Selected.name, body)})
+            - txt_composeBody:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =ctxComposeBody
+                  Height: =160
+                  Mode: =TextMode.MultiLine
+            - lbl_composeValidation:
+                Control: Text@0.0.51
+                Properties:
+                  FontColor: =RGBA(185, 28, 28, 1)
+                  Text: ="To and Subject are required."
+                  Visible: =IsBlank(txt_composeTo.Text) Or IsBlank(txt_composeSubject.Text)
+            - btn_composeSend:
+                Control: Button@0.0.45
+                Properties:
+                  BasePaletteColor: =RGBA(59, 130, 246, 1)
+                  DisplayMode: =If(IsBlank(txt_composeTo.Text) Or IsBlank(txt_composeSubject.Text), DisplayMode.Disabled, DisplayMode.Edit)
+                  OnSelect: =Office365Outlook.SendEmailV2(txt_composeTo.Text, txt_composeSubject.Text, txt_composeBody.Text); Set(gblShowComposePopup, false); Set(gblToastMessage, "Email sent"); Set(gblToastVisible, true); Reset(txt_composeTo); Reset(txt_composeSubject); Reset(txt_composeBody)
+                  Text: ="Send"
+            - btn_composeCancel:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Secondary
+                  OnSelect: =Set(gblShowComposePopup, false); Reset(txt_composeTo); Reset(txt_composeSubject); Reset(txt_composeBody)
+                  Text: ="Cancel"
+
+      - rec_dealBackdrop:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.4)
+            Height: =Parent.Height
+            Visible: =gblShowDealPopup
+            Width: =Parent.Width
+      - con_dealModal:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =520
+            LayoutDirection: =LayoutDirection.Vertical
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Visible: =gblShowDealPopup
+            Width: =640
+            X: =(Parent.Width - Self.Width)/2
+            Y: =(Parent.Height - Self.Height)/2
+          Children:
+            - txt_dealTitle:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="New return case"
+                  HintText: ="Deal Title"
+            - txt_contact:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="Contact Name"
+            - drp_pipeline:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =Distinct(colPipelineStages, pipeline_name)
+            - drp_stage:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =Filter(colPipelineStages, pipeline_name = drp_pipeline.Selected.Value)
+            - txt_value:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="0"
+            - sld_probability:
+                Control: Slider@1.0.30
+                Properties:
+                  Default: =50
+                  Max: =100
+            - txt_rma:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="RMA-0001"
+            - txt_orderNo:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="ORD-0001"
+            - txt_sku:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="SKU-001"
+            - txt_qty:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="1"
+            - drp_reason:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =Table({Value: "Damaged"}, {Value: "Wrong item"}, {Value: "Not as described"}, {Value: "Change of mind"}, {Value: "Vendor fault"})
+            - drp_condition:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =Table({Value: "New"}, {Value: "Open box"}, {Value: "Damaged"})
+            - drp_disposition:
+                Control: ComboBox@0.0.51
+                Properties:
+                  Items: =Table({Value: "Credit"}, {Value: "Replace"}, {Value: "Repair"}, {Value: "Reject"})
+            - txt_refund:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="0"
+            - btn_dealSave:
+                Control: Button@0.0.45
+                Properties:
+                  BasePaletteColor: =RGBA(59, 130, 246, 1)
+                  OnSelect: |-
+                    =Set(varSavedDeal, Patch(Deals, Defaults(Deals), {title: txt_dealTitle.Text, contact: txt_contact.Text, stage: drp_stage.Selected.Value, value: Value(txt_value.Text), probability: sld_probability.Value}));
+                    Patch(ReturnCases, Defaults(ReturnCases), {dealId: varSavedDeal.id, rmaNumber: txt_rma.Text, orderNumber: txt_orderNo.Text, sku: txt_sku.Text, quantity: Value(txt_qty.Text), returnReason: drp_reason.Selected.Value, condition: drp_condition.Selected.Value, disposition: drp_disposition.Selected.Value, refundAmount: Value(txt_refund.Text)});
+                    ClearCollect(colDeals, Deals);
+                    Set(gblShowDealPopup, false);
+                    Set(gblToastMessage, "Return case created");
+                    Set(gblToastVisible, true)
+                  Text: ="Save"
+            - btn_dealCancel:
+                Control: Button@0.0.45
+                Properties:
+                  Appearance: ='ButtonCanvas.Appearance'.Secondary
+                  OnSelect: =Set(gblShowDealPopup, false)
+                  Text: ="Cancel"
