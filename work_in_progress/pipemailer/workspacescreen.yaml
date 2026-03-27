@@ -645,7 +645,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                     PaddingLeft: =12
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(gblSelectedEmailId)) Or Not(IsBlank(gblSelectedDealId))
                                   Children:
                                     - btn_reply:
                                         Control: Button@0.0.45
@@ -656,6 +656,7 @@ Screens:
                                             =Set(gblShowReplyComposer, true);
                                             Set(gblReplyMode, "reply")
                                           Text: ="Reply"
+                                          Visible: =Not(IsBlank(gblSelectedEmailId))
                                           Width: =80
                                     - btn_replyAll:
                                         Control: Button@0.0.45
@@ -666,7 +667,83 @@ Screens:
                                             =Set(gblShowReplyComposer, true);
                                             Set(gblReplyMode, "replyAll")
                                           Text: ="Reply all"
+                                          Visible: =Not(IsBlank(gblSelectedEmailId))
                                           Width: =80
+                                    - btn_openInInbox:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          Height: =28
+                                          OnSelect: |-
+                                            =Set(
+                                                gblSelectedEmail,
+                                                With(
+                                                    {selEmail: LookUp(colEmails, id = gblSelectedEmailId)},
+                                                    {
+                                                        Id: Coalesce(selEmail.id, selEmail.Id),
+                                                        Subject: Coalesce(selEmail.Subject, selEmail.subject),
+                                                        BodyPreview: Coalesce(selEmail.BodyPreview, selEmail.bodyPreview, selEmail.snippet),
+                                                        From: Coalesce(selEmail.From, selEmail.from),
+                                                        To: Coalesce(selEmail.To, selEmail.to),
+                                                        DateTimeReceived: Coalesce(selEmail.DateTimeReceived, selEmail.receivedAt),
+                                                        IsRead: Coalesce(selEmail.IsRead, selEmail.isRead),
+                                                        DealId: Coalesce(selEmail.DealId, selEmail.dealId),
+                                                        AssigneeId: Coalesce(selEmail.AssigneeId, selEmail.assigneeId),
+                                                        ApprovalStatus: Coalesce(selEmail.ApprovalStatus, selEmail.approvalStatus)
+                                                    }
+                                                )
+                                            );
+                                            Set(gblCurrentView, "email");
+                                            Navigate(scr_Inbox, ScreenTransition.None)
+                                          Text: ="Open in Inbox"
+                                          Visible: =Not(IsBlank(gblSelectedEmailId))
+                                          Width: =114
+                                    - btn_openInKanban:
+                                        Control: Button@0.0.45
+                                        Properties:
+                                          Appearance: ='ButtonCanvas.Appearance'.Secondary
+                                          Height: =28
+                                          OnSelect: |-
+                                            =If(
+                                                Not(IsBlank(gblSelectedEmailId)),
+                                                Set(
+                                                    gblSelectedEmail,
+                                                    With(
+                                                        {selEmail: LookUp(colEmails, id = gblSelectedEmailId)},
+                                                        {
+                                                            Id: Coalesce(selEmail.id, selEmail.Id),
+                                                            Subject: Coalesce(selEmail.Subject, selEmail.subject),
+                                                            BodyPreview: Coalesce(selEmail.BodyPreview, selEmail.bodyPreview, selEmail.snippet),
+                                                            From: Coalesce(selEmail.From, selEmail.from),
+                                                            To: Coalesce(selEmail.To, selEmail.to),
+                                                            DateTimeReceived: Coalesce(selEmail.DateTimeReceived, selEmail.receivedAt),
+                                                            IsRead: Coalesce(selEmail.IsRead, selEmail.isRead),
+                                                            DealId: Coalesce(selEmail.DealId, selEmail.dealId),
+                                                            AssigneeId: Coalesce(selEmail.AssigneeId, selEmail.assigneeId),
+                                                            ApprovalStatus: Coalesce(selEmail.ApprovalStatus, selEmail.approvalStatus)
+                                                        }
+                                                    )
+                                                )
+                                            );
+                                            Set(gblCurrentView, "pipeline");
+                                            Set(gblKanbanSelectedCard, LookUp(colDeals, id = gblSelectedDealId));
+                                            Set(
+                                                gblKanbanPipeline,
+                                                Coalesce(
+                                                    LookUp(
+                                                        colPipelineStages,
+                                                        id = LookUp(colDeals, id = gblSelectedDealId, stage_id),
+                                                        pipeline_name
+                                                    ),
+                                                    LookUp(colDeals, id = gblSelectedDealId, pipeline_name),
+                                                    gblKanbanPipeline,
+                                                    "Customer returns"
+                                                )
+                                            );
+                                            Navigate(scr_ReturnsKanban, ScreenTransition.None)
+                                          Text: =If(Not(IsBlank(gblSelectedDealId)), "Open in Kanban", "Create card from this email")
+                                          Visible: =Not(IsBlank(gblSelectedEmailId)) Or Not(IsBlank(gblSelectedDealId))
+                                          Width: =174
                               - con_threadMeta:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
