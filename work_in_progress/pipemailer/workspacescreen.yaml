@@ -148,7 +148,25 @@ Screens:
         );
         If(
             Not(IsBlank(gblSelectedEmailId)),
-            ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId))
+            ClearCollect(
+                colCurrentThread,
+                With(
+                    {
+                        selectedThreadEmailId: Coalesce(gblSelectedEmail.Id, gblSelectedEmail.id, gblSelectedEmailId),
+                        selectedThreadInternetMessageId: Coalesce(
+                            gblSelectedEmail.InternetMessageId,
+                            gblSelectedEmail.internetMessageId,
+                            gblSelectedEmail.MessageId,
+                            gblSelectedEmail.messageId
+                        )
+                    },
+                    Filter(
+                        EmailMessages,
+                        emailId = selectedThreadEmailId Or
+                        emailId = selectedThreadInternetMessageId
+                    )
+                )
+            )
         );
 
     Children:
@@ -543,12 +561,9 @@ Screens:
                                 =With(
                                     {
                                         selectedEmailId: Text(Coalesce(ThisItem.Id, ThisItem.id)),
-                                        selectedInternetMessageId: Text(Coalesce(ThisItem.InternetMessageId, ThisItem.internetMessageId, ThisItem.MessageId, ThisItem.messageId))
-                                    },
-                                    Set(
-                                        gblSelectedEmail,
-                                        {
-                                            Id: selectedEmailId,
+                                        selectedInternetMessageId: Text(Coalesce(ThisItem.InternetMessageId, ThisItem.internetMessageId, ThisItem.MessageId, ThisItem.messageId)),
+                                        selectedEmailRecord: {
+                                            Id: Text(Coalesce(ThisItem.Id, ThisItem.id)),
                                             Subject: Coalesce(ThisItem.Subject, ThisItem.subject),
                                             BodyPreview: Coalesce(ThisItem.BodyPreview, ThisItem.bodyPreview, ThisItem.snippet),
                                             From: Coalesce(ThisItem.From, ThisItem.from),
@@ -558,11 +573,12 @@ Screens:
                                             DealId: Coalesce(ThisItem.DealId, ThisItem.dealId),
                                             AssigneeId: Coalesce(ThisItem.AssigneeId, ThisItem.assigneeId),
                                             ApprovalStatus: Coalesce(ThisItem.ApprovalStatus, ThisItem.approvalStatus),
-                                            InternetMessageId: selectedInternetMessageId
+                                            InternetMessageId: Text(Coalesce(ThisItem.InternetMessageId, ThisItem.internetMessageId, ThisItem.MessageId, ThisItem.messageId))
                                         }
-                                    );
+                                    },
+                                    Set(gblSelectedEmail, selectedEmailRecord);
                                     Set(gblSelectedEmailId, selectedEmailId);
-                                    Set(gblSelectedDealId, ThisItem.dealId);
+                                    Set(gblSelectedDealId, Coalesce(selectedEmailRecord.DealId, ThisItem.dealId));
                                     Patch(
                                         colEmails,
                                         LookUp(colEmails, Coalesce(Id, id) = selectedEmailId),
@@ -574,20 +590,20 @@ Screens:
                                         With(
                                             {
                                                 selectedThreadEmailId: Coalesce(
-                                                    selectedEmailId,
-                                                    selectedInternetMessageId,
-                                                    LookUp(
-                                                        colEmails,
-                                                        Coalesce(InternetMessageId, internetMessageId, MessageId, messageId) = selectedInternetMessageId,
-                                                        Coalesce(Id, id)
-                                                    )
+                                                    selectedEmailRecord.Id,
+                                                    selectedEmailRecord.id,
+                                                    selectedEmailId
+                                                ),
+                                                selectedThreadInternetMessageId: Coalesce(
+                                                    selectedEmailRecord.InternetMessageId,
+                                                    selectedEmailRecord.internetMessageId,
+                                                    selectedInternetMessageId
                                                 )
                                             },
                                             Filter(
                                                 EmailMessages,
                                                 emailId = selectedThreadEmailId Or
-                                                emailId = selectedEmailId Or
-                                                emailId = selectedInternetMessageId
+                                                emailId = selectedThreadInternetMessageId
                                             )
                                         )
                                     );
@@ -948,7 +964,38 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Subject: " & LookUp(colEmails, id = gblSelectedEmailId, subject)
+                                            ="Subject: " & Coalesce(
+                                                gblSelectedEmail.Subject,
+                                                gblSelectedEmail.subject,
+                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(Subject, subject))
+                                            )
+                                    - lbl_metaFrom:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(51, 65, 85, 1)
+                                          Height: =18
+                                          Size: =12
+                                          Text: |-
+                                            ="From: " & Coalesce(
+                                                gblSelectedEmail.From,
+                                                gblSelectedEmail.from,
+                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(From, from))
+                                            )
+                                    - lbl_metaDate:
+                                        Control: Text@0.0.51
+                                        Properties:
+                                          FontColor: =RGBA(51, 65, 85, 1)
+                                          Height: =18
+                                          Size: =12
+                                          Text: |-
+                                            ="Date: " & Text(
+                                                Coalesce(
+                                                    gblSelectedEmail.DateTimeReceived,
+                                                    gblSelectedEmail.receivedAt,
+                                                    LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(DateTimeReceived, receivedAt))
+                                                ),
+                                                "dd/mm/yyyy HH:mm"
+                                            )
                                     - lbl_metaDeal:
                                         Control: Text@0.0.51
                                         Properties:
@@ -956,23 +1003,14 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Linked deal: " & Coalesce(LookUp(colDeals, id = gblSelectedDealId, title), "Unlinked")
-                                    - lbl_metaSla:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FontColor: =RGBA(51, 65, 85, 1)
-                                          Height: =18
-                                          Size: =12
-                                          Text: |-
-                                            ="SLA: " & Switch(LookUp(colEmails, id = gblSelectedEmailId, computedSlaStatus), "onTrack", "On track", "atRisk", "At risk", "overdue", "Overdue", "breached", "Breached", "On track")
-                                    - lbl_metaDue:
-                                        Control: Text@0.0.51
-                                        Properties:
-                                          FontColor: =RGBA(51, 65, 85, 1)
-                                          Height: =18
-                                          Size: =12
-                                          Text: |-
-                                            ="Resolution due: " & Text(LookUp(colEmails, id = gblSelectedEmailId, resolutionDueAt), "dd/mm/yyyy HH:mm")
+                                            ="Linked deal: " & Coalesce(
+                                                LookUp(
+                                                    colDeals,
+                                                    id = Coalesce(gblSelectedEmail.DealId, gblSelectedEmail.dealId, gblSelectedDealId),
+                                                    title
+                                                ),
+                                                "Unlinked"
+                                            )
                               - gal_thread:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
@@ -1041,7 +1079,11 @@ Screens:
                                         Control: Classic/TextInput@2.3.2
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Stretch
-                                          Default: =LookUp(colEmails, id = gblSelectedEmailId, from)
+                                          Default: =Coalesce(
+                                              gblSelectedEmail.From,
+                                              gblSelectedEmail.from,
+                                              LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(From, from))
+                                          )
                                           Height: =32
                                           HintText: ="To:"
                                     - txt_replySubject:
@@ -1049,7 +1091,11 @@ Screens:
                                         Properties:
                                           AlignInContainer: =AlignInContainer.Stretch
                                           Default: |-
-                                            ="Re: " & LookUp(colEmails, id = gblSelectedEmailId, subject)
+                                            ="Re: " & Coalesce(
+                                                gblSelectedEmail.Subject,
+                                                gblSelectedEmail.subject,
+                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(Subject, subject))
+                                            )
                                           Height: =32
                                           HintText: ="Subject:"
                                     - txt_replyBody:
