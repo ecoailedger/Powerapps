@@ -42,7 +42,25 @@ Screens:
         If(
             IsBlank(gblSelectedEmailId) And Not(IsBlank(First(colEmails))),
             Set(gblSelectedEmailId, First(colEmails).id);
-            Set(gblSelectedDealId, First(colEmails).dealId)
+            Set(gblSelectedDealId, First(colEmails).dealId);
+            Set(
+                gblSelectedEmail,
+                With(
+                    {selEmail: First(colEmails)},
+                    {
+                        Id: selEmail.id,
+                        Subject: Coalesce(selEmail.Subject, selEmail.subject),
+                        BodyPreview: Coalesce(selEmail.BodyPreview, selEmail.bodyPreview, selEmail.snippet),
+                        From: Coalesce(selEmail.From, selEmail.from),
+                        To: Coalesce(selEmail.To, selEmail.to),
+                        DateTimeReceived: Coalesce(selEmail.DateTimeReceived, selEmail.receivedAt),
+                        IsRead: Coalesce(selEmail.IsRead, selEmail.isRead),
+                        DealId: Coalesce(selEmail.DealId, selEmail.dealId),
+                        AssigneeId: Coalesce(selEmail.AssigneeId, selEmail.assigneeId),
+                        ApprovalStatus: Coalesce(selEmail.ApprovalStatus, selEmail.approvalStatus)
+                    }
+                )
+            )
         );
         If(
             Not(IsBlank(gblSelectedEmailId)),
@@ -365,6 +383,21 @@ Screens:
                               OnSelect: |-
                                 =Set(gblSelectedEmailId, ThisItem.id);
                                 Set(gblSelectedDealId, ThisItem.dealId);
+                                Set(
+                                    gblSelectedEmail,
+                                    {
+                                        Id: ThisItem.id,
+                                        Subject: Coalesce(ThisItem.Subject, ThisItem.subject),
+                                        BodyPreview: Coalesce(ThisItem.BodyPreview, ThisItem.bodyPreview, ThisItem.snippet),
+                                        From: Coalesce(ThisItem.From, ThisItem.from),
+                                        To: Coalesce(ThisItem.To, ThisItem.to),
+                                        DateTimeReceived: Coalesce(ThisItem.DateTimeReceived, ThisItem.receivedAt),
+                                        IsRead: Coalesce(ThisItem.IsRead, ThisItem.isRead),
+                                        DealId: Coalesce(ThisItem.DealId, ThisItem.dealId),
+                                        AssigneeId: Coalesce(ThisItem.AssigneeId, ThisItem.assigneeId),
+                                        ApprovalStatus: Coalesce(ThisItem.ApprovalStatus, ThisItem.approvalStatus)
+                                    }
+                                );
                                 Set(gblShowReplyComposer, false);
                                 ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId));
                                 UpdateContext({ctxActiveTab: "Thread"})
@@ -774,6 +807,20 @@ Screens:
                                                 BasePaletteColor: =RGBA(59, 130, 246, 1)
                                                 OnSelect: |-
                                                   =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {lastReplyAt: Now(), isRead: true});
+                                                  Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {lastReplyAt: Now(), isRead: true});
+                                                  Set(
+                                                      gblSelectedEmail,
+                                                      Patch(
+                                                          gblSelectedEmail,
+                                                          {
+                                                              Id: gblSelectedEmailId,
+                                                              Subject: Coalesce(gblSelectedEmail.Subject, LookUp(colEmails, id = gblSelectedEmailId, subject)),
+                                                              BodyPreview: Coalesce(gblSelectedEmail.BodyPreview, LookUp(colEmails, id = gblSelectedEmailId, snippet)),
+                                                              IsRead: true,
+                                                              LastReplyAt: Now()
+                                                          }
+                                                      )
+                                                  );
                                                   Patch(EmailMessages, Defaults(EmailMessages), {emailId: gblSelectedEmailId, from: gblActorName, at: Text(Now(), "yyyy-mm-ddTHH:mm:ssZ"), body: txt_replyBody.Text, direction: "outbound"});
                                                   ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId));
                                                   Set(gblShowReplyComposer, false);
@@ -869,6 +916,16 @@ Screens:
                                                 Not(IsBlank(gblStagedAssigneeId)),
                                                 Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {assigneeId: gblStagedAssigneeId, assignedAt: Now()});
                                                 Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {assigneeId: gblStagedAssigneeId, assignedAt: Text(Now(), "dd/mm/yyyy HH:mm")});
+                                                Set(
+                                                    gblSelectedEmail,
+                                                    Patch(
+                                                        gblSelectedEmail,
+                                                        {
+                                                            Id: gblSelectedEmailId,
+                                                            AssigneeId: gblStagedAssigneeId
+                                                        }
+                                                    )
+                                                );
                                                 Set(gblToastMessage, "Assignee updated.");
                                                 Set(gblToastVisible, true);
                                                 Timer_Toast.Start()
@@ -1160,6 +1217,16 @@ Screens:
                                           OnSelect: |-
                                             =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "required"});
                                             Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "required"});
+                                            Set(
+                                                gblSelectedEmail,
+                                                Patch(
+                                                    gblSelectedEmail,
+                                                    {
+                                                        Id: gblSelectedEmailId,
+                                                        ApprovalStatus: "required"
+                                                    }
+                                                )
+                                            );
                                             Set(gblToastMessage, "Approval requested.");
                                             Set(gblToastVisible, true);
                                             Timer_Toast.Start()
@@ -1172,6 +1239,16 @@ Screens:
                                           OnSelect: |-
                                             =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "approved"});
                                             Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "approved"});
+                                            Set(
+                                                gblSelectedEmail,
+                                                Patch(
+                                                    gblSelectedEmail,
+                                                    {
+                                                        Id: gblSelectedEmailId,
+                                                        ApprovalStatus: "approved"
+                                                    }
+                                                )
+                                            );
                                             Set(gblToastMessage, "Approved.");
                                             Set(gblToastVisible, true);
                                             Timer_Toast.Start()
@@ -1184,6 +1261,16 @@ Screens:
                                           OnSelect: |-
                                             =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "rejected"});
                                             Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "rejected"});
+                                            Set(
+                                                gblSelectedEmail,
+                                                Patch(
+                                                    gblSelectedEmail,
+                                                    {
+                                                        Id: gblSelectedEmailId,
+                                                        ApprovalStatus: "rejected"
+                                                    }
+                                                )
+                                            );
                                             Set(gblToastMessage, "Rejected.");
                                             Set(gblToastVisible, true);
                                             Timer_Toast.Start()
