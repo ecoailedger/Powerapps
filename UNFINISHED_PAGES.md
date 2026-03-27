@@ -1472,3 +1472,12 @@ If(
 ```
 
 Seed `colCurrentThread` for e001 with 2 dummy messages. Seed `colDeals`, `colAssignees`, `colKanbanDeals` similarly so the Pipeline and Dashboard views always render content.
+
+---
+
+## AI generated page section
+
+Generated page YAML (including the requested Pipeline view, Dashboard view, compose/deal modals, rectangle click-overlay fixes, Office365Outlook reply wiring, macro template insertion, and dummy seed data) has been added here:
+
+- `examples/ai-generated/yaml/responsive/responsive-workspace-view-ai.yaml`
+
