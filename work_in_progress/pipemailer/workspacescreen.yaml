@@ -31,9 +31,21 @@ Screens:
         ClearCollect(colAssigneeFilters, Table({id: "all", name: "All assignees"}));
         Collect(colAssigneeFilters, colAssignees);
         If(
-            Not(IsBlank(First(colEmails))),
+            Not(IsBlank(gblSelectedEmail)),
+            Set(gblSelectedEmailId, Coalesce(gblSelectedEmail.id, gblSelectedEmail.Id, gblSelectedEmailId));
+            Set(gblSelectedDealId, Coalesce(gblSelectedEmail.dealId, gblSelectedDealId)),
+            If(
+                Not(IsBlank(gblKanbanSelectedCard)),
+                Set(gblSelectedDealId, Coalesce(gblKanbanSelectedCard.id, gblSelectedDealId))
+            )
+        );
+        If(
+            IsBlank(gblSelectedEmailId) And Not(IsBlank(First(colEmails))),
             Set(gblSelectedEmailId, First(colEmails).id);
-            Set(gblSelectedDealId, First(colEmails).dealId);
+            Set(gblSelectedDealId, First(colEmails).dealId)
+        );
+        If(
+            Not(IsBlank(gblSelectedEmailId)),
             ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId))
         );
 
@@ -83,14 +95,21 @@ Screens:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: =If(gblCurrentView = "email", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
-                        OnSelect: =Set(gblCurrentView, "email")
+                        OnSelect: |-
+                          =Set(gblCurrentView, "email");
+                          Set(gblSelectedEmail, LookUp(colEmails, id = gblSelectedEmailId));
+                          Navigate(scr_Inbox, ScreenTransition.None)
                         Text: ="Email View"
                         Width: =104
                   - btn_viewPipeline:
                       Control: Button@0.0.45
                       Properties:
                         Appearance: =If(gblCurrentView = "pipeline", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
-                        OnSelect: =Set(gblCurrentView, "pipeline")
+                        OnSelect: |-
+                          =Set(gblCurrentView, "pipeline");
+                          Set(gblKanbanSelectedCard, LookUp(colDeals, id = gblSelectedDealId));
+                          Set(gblKanbanPipeline, Coalesce(gblKanbanPipeline, "Customer returns"));
+                          Navigate(scr_ReturnsKanban, ScreenTransition.None)
                         Text: ="Pipeline View"
                         Width: =116
                   - btn_viewDashboard:
