@@ -34,9 +34,83 @@ Screens:
             )
         );
         ClearCollect(
-            colEmails,
-            SortByColumns(Filter(Emails, folder = gblSelectedFolder), "receivedAt", SortOrder.Descending)
+            colWorkspaceEmailsRaw,
+            Office365Outlook.GetEmails(
+                {
+                    folderPath: Switch(
+                        Lower(gblSelectedFolder),
+                        "sent", "Sent Items",
+                        "drafts", "Drafts",
+                        "archive", "Archive",
+                        "Inbox"
+                    ),
+                    top: 50,
+                    fetchOnlyUnread: false,
+                    includeAttachments: false
+                }
+            )
         );
+        ClearCollect(
+            colWorkspaceEmails,
+            ForAll(
+                colWorkspaceEmailsRaw As email,
+                With(
+                    {
+                        normalizedId: Text(Coalesce(email.Id, email.id, email.messageId)),
+                        normalizedFrom: Coalesce(email.From, email.from, email.Sender, email.sender),
+                        normalizedSubject: Coalesce(email.Subject, email.subject),
+                        normalizedBodyPreview: Coalesce(email.BodyPreview, email.bodyPreview),
+                        normalizedReceivedAt: Coalesce(email.DateTimeReceived, email.receivedDateTime, email.receivedAt),
+                        normalizedIsRead: Coalesce(email.IsRead, email.isRead, false),
+                        normalizedTo: Coalesce(email.To, email.to)
+                    },
+                    {
+                        Id: normalizedId,
+                        id: normalizedId,
+                        From: normalizedFrom,
+                        from: normalizedFrom,
+                        Subject: normalizedSubject,
+                        subject: normalizedSubject,
+                        BodyPreview: normalizedBodyPreview,
+                        bodyPreview: normalizedBodyPreview,
+                        snippet: normalizedBodyPreview,
+                        DateTimeReceived: normalizedReceivedAt,
+                        receivedAt: normalizedReceivedAt,
+                        IsRead: normalizedIsRead,
+                        isRead: normalizedIsRead,
+                        To: normalizedTo,
+                        to: normalizedTo,
+                        relativeDate: If(
+                            IsBlank(normalizedReceivedAt),
+                            "",
+                            With(
+                                {ageMins: DateDiff(normalizedReceivedAt, Now(), TimeUnit.Minutes)},
+                                If(
+                                    ageMins < 60,
+                                    Text(ageMins) & "m ago",
+                                    If(
+                                        ageMins < 1440,
+                                        Text(RoundDown(ageMins / 60, 0)) & "h ago",
+                                        Text(normalizedReceivedAt, "dd mmm")
+                                    )
+                                )
+                            )
+                        ),
+                        assigneeId: Blank(),
+                        dealId: Blank(),
+                        approvalStatus: Blank(),
+                        computedSlaStatus: Blank(),
+                        resolutionDueAt: Blank(),
+                        assignedAt: Blank()
+                    }
+                )
+            )
+        );
+        ClearCollect(
+            colEmails,
+            SortByColumns(colWorkspaceEmails, "DateTimeReceived", SortOrder.Descending)
+        );
+        UpdateContext({ctxHasAssignmentFields: CountIf(colEmails, Not(IsBlank(assigneeId))) > 0});
         ClearCollect(colDeals, Deals);
         ClearCollect(colAssigneeFilters, Table({id: "all", name: "All assignees"}));
         Collect(colAssigneeFilters, colAssignees);
@@ -51,14 +125,14 @@ Screens:
         );
         If(
             IsBlank(gblSelectedEmailId) And Not(IsBlank(First(colEmails))),
-            Set(gblSelectedEmailId, First(colEmails).id);
-            Set(gblSelectedDealId, First(colEmails).dealId);
+            Set(gblSelectedEmailId, Coalesce(First(colEmails).Id, First(colEmails).id));
+            Set(gblSelectedDealId, Coalesce(First(colEmails).DealId, First(colEmails).dealId));
             Set(
                 gblSelectedEmail,
                 With(
                     {selEmail: First(colEmails)},
                     {
-                        Id: selEmail.id,
+                        Id: Coalesce(selEmail.Id, selEmail.id),
                         Subject: Coalesce(selEmail.Subject, selEmail.subject),
                         BodyPreview: Coalesce(selEmail.BodyPreview, selEmail.bodyPreview, selEmail.snippet),
                         From: Coalesce(selEmail.From, selEmail.from),
@@ -216,9 +290,83 @@ Screens:
                                     OnSelect: |-
                                       =Set(gblSelectedFolder, ThisItem.id);
                                       ClearCollect(
+                                          colWorkspaceEmailsRaw,
+                                          Office365Outlook.GetEmails(
+                                              {
+                                                  folderPath: Switch(
+                                                      Lower(gblSelectedFolder),
+                                                      "sent", "Sent Items",
+                                                      "drafts", "Drafts",
+                                                      "archive", "Archive",
+                                                      "Inbox"
+                                                  ),
+                                                  top: 50,
+                                                  fetchOnlyUnread: false,
+                                                  includeAttachments: false
+                                              }
+                                          )
+                                      );
+                                      ClearCollect(
+                                          colWorkspaceEmails,
+                                          ForAll(
+                                              colWorkspaceEmailsRaw As email,
+                                              With(
+                                                  {
+                                                      normalizedId: Text(Coalesce(email.Id, email.id, email.messageId)),
+                                                      normalizedFrom: Coalesce(email.From, email.from, email.Sender, email.sender),
+                                                      normalizedSubject: Coalesce(email.Subject, email.subject),
+                                                      normalizedBodyPreview: Coalesce(email.BodyPreview, email.bodyPreview),
+                                                      normalizedReceivedAt: Coalesce(email.DateTimeReceived, email.receivedDateTime, email.receivedAt),
+                                                      normalizedIsRead: Coalesce(email.IsRead, email.isRead, false),
+                                                      normalizedTo: Coalesce(email.To, email.to)
+                                                  },
+                                                  {
+                                                      Id: normalizedId,
+                                                      id: normalizedId,
+                                                      From: normalizedFrom,
+                                                      from: normalizedFrom,
+                                                      Subject: normalizedSubject,
+                                                      subject: normalizedSubject,
+                                                      BodyPreview: normalizedBodyPreview,
+                                                      bodyPreview: normalizedBodyPreview,
+                                                      snippet: normalizedBodyPreview,
+                                                      DateTimeReceived: normalizedReceivedAt,
+                                                      receivedAt: normalizedReceivedAt,
+                                                      IsRead: normalizedIsRead,
+                                                      isRead: normalizedIsRead,
+                                                      To: normalizedTo,
+                                                      to: normalizedTo,
+                                                      relativeDate: If(
+                                                          IsBlank(normalizedReceivedAt),
+                                                          "",
+                                                          With(
+                                                              {ageMins: DateDiff(normalizedReceivedAt, Now(), TimeUnit.Minutes)},
+                                                              If(
+                                                                  ageMins < 60,
+                                                                  Text(ageMins) & "m ago",
+                                                                  If(
+                                                                      ageMins < 1440,
+                                                                      Text(RoundDown(ageMins / 60, 0)) & "h ago",
+                                                                      Text(normalizedReceivedAt, "dd mmm")
+                                                                  )
+                                                              )
+                                                          )
+                                                      ),
+                                                      assigneeId: Blank(),
+                                                      dealId: Blank(),
+                                                      approvalStatus: Blank(),
+                                                      computedSlaStatus: Blank(),
+                                                      resolutionDueAt: Blank(),
+                                                      assignedAt: Blank()
+                                                  }
+                                              )
+                                          )
+                                      );
+                                      ClearCollect(
                                           colEmails,
-                                          SortByColumns(Filter(Emails, folder = gblSelectedFolder), "receivedAt", SortOrder.Descending)
-                                      )
+                                          SortByColumns(colWorkspaceEmails, "DateTimeReceived", SortOrder.Descending)
+                                      );
+                                      UpdateContext({ctxHasAssignmentFields: CountIf(colEmails, Not(IsBlank(assigneeId))) > 0})
                                     Width: =Parent.TemplateWidth
                               - lbl_folderLabel:
                                   Control: Text@0.0.51
@@ -381,12 +529,13 @@ Screens:
                                 =Sort(
                                     Filter(
                                         colEmails,
+                                        Not(ctxHasAssignmentFields) Or
                                         (gblSelectedQueue = "all") Or
                                         (gblSelectedQueue = "mine" And assigneeId = gblCurrentUserId) Or
                                         (gblSelectedQueue = "unassigned" And IsBlank(assigneeId)) Or
                                         (gblSelectedQueue = "team" And Not(IsBlank(assigneeId))),
-                                        (gblSelectedAssigneeFilter = "all") Or assigneeId = gblSelectedAssigneeFilter,
-                                        IsBlank(gblSearchText) Or (gblSearchText in subject) Or (gblSearchText in from)
+                                        Not(ctxHasAssignmentFields) Or (gblSelectedAssigneeFilter = "all") Or assigneeId = gblSelectedAssigneeFilter,
+                                        IsBlank(gblSearchText) Or (gblSearchText in Coalesce(subject, Subject)) Or (gblSearchText in Coalesce(from, From))
                                     ),
                                     receivedAt, SortOrder.Descending
                                 )
