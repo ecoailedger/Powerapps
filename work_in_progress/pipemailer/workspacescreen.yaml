@@ -124,7 +124,7 @@ Screens:
             )
         );
         If(
-            IsBlank(gblSelectedEmailId) And Not(IsBlank(First(colEmails))),
+            IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)) And Not(IsBlank(First(colEmails))),
             Set(gblSelectedEmailId, Coalesce(First(colEmails).Id, First(colEmails).id));
             Set(gblSelectedDealId, Coalesce(First(colEmails).DealId, First(colEmails).dealId));
             Set(
@@ -147,7 +147,7 @@ Screens:
             )
         );
         If(
-            Not(IsBlank(gblSelectedEmailId)),
+            Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))),
             ClearCollect(
                 colCurrentThread,
                 With(
@@ -217,7 +217,7 @@ Screens:
                         Appearance: =If(gblCurrentView = "email", 'ButtonCanvas.Appearance'.Primary, 'ButtonCanvas.Appearance'.Secondary)
                         OnSelect: |-
                           =Set(gblCurrentView, "email");
-                          Set(gblSelectedEmail, LookUp(colEmails, id = gblSelectedEmailId));
+                          Set(gblSelectedEmail, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)));
                           Navigate(scr_Inbox, ScreenTransition.None)
                         Text: ="Email View"
                         Width: =104
@@ -831,7 +831,7 @@ Screens:
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Text: ="Select an email to view the full thread."
                                     VerticalAlign: =VerticalAlign.Middle
-                                    Visible: =IsBlank(gblSelectedEmailId)
+                                    Visible: =IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))
                               - hcon_threadActions:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -843,7 +843,7 @@ Screens:
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
                                     PaddingLeft: =12
-                                    Visible: =Not(IsBlank(gblSelectedEmailId)) Or Not(IsBlank(gblSelectedDealId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))) Or Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
                                   Children:
                                     - btn_reply:
                                         Control: Button@0.0.45
@@ -854,7 +854,7 @@ Screens:
                                             =Set(gblShowReplyComposer, true);
                                             Set(gblReplyMode, "reply")
                                           Text: ="Reply"
-                                          Visible: =Not(IsBlank(gblSelectedEmailId))
+                                          Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                           Width: =80
                                     - btn_replyAll:
                                         Control: Button@0.0.45
@@ -865,7 +865,7 @@ Screens:
                                             =Set(gblShowReplyComposer, true);
                                             Set(gblReplyMode, "replyAll")
                                           Text: ="Reply all"
-                                          Visible: =Not(IsBlank(gblSelectedEmailId))
+                                          Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                           Width: =80
                                     - btn_openInInbox:
                                         Control: Button@0.0.45
@@ -876,7 +876,7 @@ Screens:
                                             =Set(
                                                 gblSelectedEmail,
                                                 With(
-                                                    {selEmail: LookUp(colEmails, id = gblSelectedEmailId)},
+                                                    {selEmail: LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))},
                                                     {
                                                         Id: Coalesce(selEmail.id, selEmail.Id),
                                                         Subject: Coalesce(selEmail.Subject, selEmail.subject),
@@ -894,7 +894,7 @@ Screens:
                                             Set(gblCurrentView, "email");
                                             Navigate(scr_Inbox, ScreenTransition.None)
                                           Text: ="Open in Inbox"
-                                          Visible: =Not(IsBlank(gblSelectedEmailId))
+                                          Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                           Width: =114
                                     - btn_openInKanban:
                                         Control: Button@0.0.45
@@ -903,11 +903,11 @@ Screens:
                                           Height: =28
                                           OnSelect: |-
                                             =If(
-                                                Not(IsBlank(gblSelectedEmailId)),
+                                                Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))),
                                                 Set(
                                                     gblSelectedEmail,
                                                     With(
-                                                        {selEmail: LookUp(colEmails, id = gblSelectedEmailId)},
+                                                        {selEmail: LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))},
                                                         {
                                                             Id: Coalesce(selEmail.id, selEmail.Id),
                                                             Subject: Coalesce(selEmail.Subject, selEmail.subject),
@@ -939,8 +939,8 @@ Screens:
                                                 )
                                             );
                                             Navigate(scr_ReturnsKanban, ScreenTransition.None)
-                                          Text: =If(Not(IsBlank(gblSelectedDealId)), "Open in Kanban", "Create card from this email")
-                                          Visible: =Not(IsBlank(gblSelectedEmailId)) Or Not(IsBlank(gblSelectedDealId))
+                                          Text: =If(Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId))), "Open in Kanban", "Create card from this email")
+                                          Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))) Or Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
                                           Width: =174
                               - con_threadMeta:
                                   Control: GroupContainer@1.5.0
@@ -955,7 +955,7 @@ Screens:
                                     PaddingLeft: =16
                                     PaddingRight: =16
                                     PaddingTop: =10
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - lbl_metaSubject:
                                         Control: Text@0.0.51
@@ -967,7 +967,7 @@ Screens:
                                             ="Subject: " & Coalesce(
                                                 gblSelectedEmail.Subject,
                                                 gblSelectedEmail.subject,
-                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(Subject, subject))
+                                                LookUp(colEmails, Coalesce(id, Id) = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), Coalesce(Subject, subject))
                                             )
                                     - lbl_metaFrom:
                                         Control: Text@0.0.51
@@ -979,7 +979,7 @@ Screens:
                                             ="From: " & Coalesce(
                                                 gblSelectedEmail.From,
                                                 gblSelectedEmail.from,
-                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(From, from))
+                                                LookUp(colEmails, Coalesce(id, Id) = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), Coalesce(From, from))
                                             )
                                     - lbl_metaDate:
                                         Control: Text@0.0.51
@@ -992,14 +992,14 @@ Screens:
                                                 Coalesce(
                                                     gblSelectedEmail.DateTimeReceived,
                                                     gblSelectedEmail.receivedAt,
-                                                    LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(DateTimeReceived, receivedAt))
+                                                    LookUp(colEmails, Coalesce(id, Id) = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), Coalesce(DateTimeReceived, receivedAt))
                                                 ),
                                                 "dd/mm/yyyy HH:mm"
                                             )
                                     - lbl_metaDeal:
                                         Control: Text@0.0.51
                                         Properties:
-                                          FontColor: =If(IsBlank(gblSelectedDealId), RGBA(148, 163, 184, 1), RGBA(51, 65, 85, 1))
+                                          FontColor: =If(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)), RGBA(148, 163, 184, 1), RGBA(51, 65, 85, 1))
                                           Height: =18
                                           Size: =12
                                           Text: |-
@@ -1011,6 +1011,15 @@ Screens:
                                                 ),
                                                 "Unlinked"
                                             )
+                              - lbl_messageListHeading:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =18
+                                    Size: =10
+                                    Text: ="MESSAGE LIST"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - gal_thread:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
@@ -1018,7 +1027,7 @@ Screens:
                                     Items: =colCurrentThread
                                     TemplatePadding: =8
                                     TemplateSize: =120
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - rec_msgBg:
                                         Control: Rectangle@2.3.0
@@ -1060,6 +1069,23 @@ Screens:
                                           Width: =Parent.TemplateWidth - 40
                                           X: =20
                                           Y: =38
+                              - lbl_threadListEmpty:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Align: ='TextCanvas.Align'.Center
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =24
+                                    Text: ="No thread messages available for this email."
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))) And CountRows(colCurrentThread) = 0
+                              - lbl_replyHeading:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =18
+                                    Size: =10
+                                    Text: ="REPLY"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - con_replyComposer:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1073,7 +1099,7 @@ Screens:
                                     PaddingLeft: =12
                                     PaddingRight: =12
                                     PaddingTop: =12
-                                    Visible: =gblShowReplyComposer And Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =gblShowReplyComposer And Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - txt_replyTo:
                                         Control: Classic/TextInput@2.3.2
@@ -1082,7 +1108,7 @@ Screens:
                                           Default: =Coalesce(
                                               gblSelectedEmail.From,
                                               gblSelectedEmail.from,
-                                              LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(From, from))
+                                              LookUp(colEmails, Coalesce(id, Id) = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), Coalesce(From, from))
                                           )
                                           Height: =32
                                           HintText: ="To:"
@@ -1094,7 +1120,7 @@ Screens:
                                             ="Re: " & Coalesce(
                                                 gblSelectedEmail.Subject,
                                                 gblSelectedEmail.subject,
-                                                LookUp(colEmails, Coalesce(id, Id) = gblSelectedEmailId, Coalesce(Subject, subject))
+                                                LookUp(colEmails, Coalesce(id, Id) = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), Coalesce(Subject, subject))
                                             )
                                           Height: =32
                                           HintText: ="Subject:"
@@ -1121,23 +1147,23 @@ Screens:
                                               Properties:
                                                 BasePaletteColor: =RGBA(59, 130, 246, 1)
                                                 OnSelect: |-
-                                                  =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {lastReplyAt: Now(), isRead: true});
-                                                  Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {lastReplyAt: Now(), isRead: true});
+                                                  =Patch(Emails, LookUp(Emails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {lastReplyAt: Now(), isRead: true});
+                                                  Patch(colEmails, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {lastReplyAt: Now(), isRead: true});
                                                   Set(
                                                       gblSelectedEmail,
                                                       Patch(
                                                           gblSelectedEmail,
                                                           {
-                                                              Id: gblSelectedEmailId,
-                                                              Subject: Coalesce(gblSelectedEmail.Subject, LookUp(colEmails, id = gblSelectedEmailId, subject)),
-                                                              BodyPreview: Coalesce(gblSelectedEmail.BodyPreview, LookUp(colEmails, id = gblSelectedEmailId, snippet)),
+                                                              Id: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id),
+                                                              Subject: Coalesce(gblSelectedEmail.Subject, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), subject)),
+                                                              BodyPreview: Coalesce(gblSelectedEmail.BodyPreview, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), snippet)),
                                                               IsRead: true,
                                                               LastReplyAt: Now()
                                                           }
                                                       )
                                                   );
-                                                  Patch(EmailMessages, Defaults(EmailMessages), {emailId: gblSelectedEmailId, from: gblActorName, at: Text(Now(), "yyyy-mm-ddTHH:mm:ssZ"), body: txt_replyBody.Text, direction: "outbound"});
-                                                  ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = gblSelectedEmailId));
+                                                  Patch(EmailMessages, Defaults(EmailMessages), {emailId: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), from: gblActorName, at: Text(Now(), "yyyy-mm-ddTHH:mm:ssZ"), body: txt_replyBody.Text, direction: "outbound"});
+                                                  ClearCollect(colCurrentThread, Filter(EmailMessages, emailId = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)));
                                                   Set(gblShowReplyComposer, false);
                                                   Set(gblToastMessage, "Reply sent.");
                                                   Set(gblToastVisible, true);
@@ -1170,23 +1196,24 @@ Screens:
                                     Align: ='TextCanvas.Align'.Center
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Text: ="No thread selected."
-                                    Visible: =IsBlank(gblSelectedEmailId)
+                                    Visible: =IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))
                               - lbl_ownerLabel:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(100, 116, 139, 1)
                                     Height: =18
                                     Size: =11
-                                    Text: ="Current owner"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: ="OWNER"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - lbl_ownerValue:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(15, 23, 42, 1)
                                     Height: =22
                                     Size: =13
-                                    Text: =Coalesce(LookUp(colAssignees, id = LookUp(colEmails, id = gblSelectedEmailId, assigneeId), name), "Unassigned")
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: =Coalesce(LookUp(colAssignees, id = LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), assigneeId), name), "Unassigned")
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Weight: ='TextCanvas.Weight'.Semibold
                               - lbl_assignedAtLabel:
                                   Control: Text@0.0.51
@@ -1195,15 +1222,24 @@ Screens:
                                     Height: =18
                                     Size: =11
                                     Text: ="Assigned at"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                               - lbl_assignedAtValue:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(51, 65, 85, 1)
                                     Height: =18
                                     Size: =12
-                                    Text: =Coalesce(Text(LookUp(colEmails, id = gblSelectedEmailId, assignedAt), "dd/mm/yyyy HH:mm"), "—")
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: =Coalesce(Text(LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), assignedAt), "dd/mm/yyyy HH:mm"), "—")
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                              - lbl_assignChangeHeading:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =20
+                                    Size: =10
+                                    Text: ="CHANGE"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - hcon_assignControls:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1214,7 +1250,7 @@ Screens:
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - drp_assigneeSelect:
                                         Control: ComboBox@0.0.51
@@ -1229,14 +1265,14 @@ Screens:
                                           OnSelect: |-
                                             =If(
                                                 Not(IsBlank(gblStagedAssigneeId)),
-                                                Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {assigneeId: gblStagedAssigneeId, assignedAt: Now()});
-                                                Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {assigneeId: gblStagedAssigneeId, assignedAt: Text(Now(), "dd/mm/yyyy HH:mm")});
+                                                Patch(Emails, LookUp(Emails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {assigneeId: gblStagedAssigneeId, assignedAt: Now()});
+                                                Patch(colEmails, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {assigneeId: gblStagedAssigneeId, assignedAt: Text(Now(), "dd/mm/yyyy HH:mm")});
                                                 Set(
                                                     gblSelectedEmail,
                                                     Patch(
                                                         gblSelectedEmail,
                                                         {
-                                                            Id: gblSelectedEmailId,
+                                                            Id: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id),
                                                             AssigneeId: gblStagedAssigneeId
                                                         }
                                                     )
@@ -1245,7 +1281,7 @@ Screens:
                                                 Set(gblToastVisible, true);
                                                 Timer_Toast.Start()
                                             )
-                                          Text: =If(IsBlank(LookUp(colEmails, id = gblSelectedEmailId, assigneeId)), "Assign", "Reassign")
+                                          Text: =If(IsBlank(LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), assigneeId)), "Assign", "Reassign")
                                           Width: =88
                               - rect_assignHistDivider:
                                   Control: Rectangle@2.3.0
@@ -1253,7 +1289,7 @@ Screens:
                                     AlignInContainer: =AlignInContainer.Stretch
                                     Fill: =RGBA(226, 232, 240, 1)
                                     Height: =1
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Width: =1
                               - lbl_assignHistHeading:
                                   Control: Text@0.0.51
@@ -1261,17 +1297,17 @@ Screens:
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Height: =20
                                     Size: =10
-                                    Text: ="ASSIGNMENT HISTORY"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: ="HISTORY"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Weight: ='TextCanvas.Weight'.Bold
                               - gal_assignHistory:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    Items: =Filter(EmailAssignments, emailId = gblSelectedEmailId)
+                                    Items: =Filter(EmailAssignments, emailId = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))
                                     TemplatePadding: =0
                                     TemplateSize: =36
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - lbl_histName:
                                         Control: Text@0.0.51
@@ -1310,16 +1346,25 @@ Screens:
                                   Properties:
                                     Align: ='TextCanvas.Align'.Center
                                     FontColor: =RGBA(148, 163, 184, 1)
-                                    Text: ="No linked deal."
-                                    Visible: =IsBlank(gblSelectedDealId)
+                                    Text: ="No linked return/deal selected."
+                                    Visible: =IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId))
+                              - lbl_dealSummaryHeading:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =20
+                                    Size: =10
+                                    Text: ="DEAL SUMMARY"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - lbl_dealTitle:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(15, 23, 42, 1)
                                     Height: =28
                                     Size: =16
-                                    Text: =LookUp(colDeals, id = gblSelectedDealId, title)
-                                    Visible: =Not(IsBlank(gblSelectedDealId))
+                                    Text: =LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), title)
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
                                     Weight: ='TextCanvas.Weight'.Bold
                               - lbl_dealContact:
                                   Control: Text@0.0.51
@@ -1327,8 +1372,8 @@ Screens:
                                     FontColor: =RGBA(100, 116, 139, 1)
                                     Height: =20
                                     Size: =12
-                                    Text: =LookUp(colDeals, id = gblSelectedDealId, contact)
-                                    Visible: =Not(IsBlank(gblSelectedDealId))
+                                    Text: =LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), contact)
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
                               - con_dealKpis:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1342,7 +1387,7 @@ Screens:
                                     PaddingLeft: =16
                                     PaddingRight: =16
                                     PaddingTop: =12
-                                    Visible: =Not(IsBlank(gblSelectedDealId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId)))
                                   Children:
                                     - lbl_dealStage:
                                         Control: Text@0.0.51
@@ -1354,10 +1399,10 @@ Screens:
                                             ="Stage: " & Coalesce(
                                                 LookUp(
                                                     colPipelineStages,
-                                                    id = LookUp(colDeals, id = gblSelectedDealId, stage_id),
+                                                    id = LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), stage_id),
                                                     name
                                                 ),
-                                                LookUp(colDeals, id = gblSelectedDealId, stage),
+                                                LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), stage),
                                                 "Unknown"
                                             )
                                     - lbl_dealValue:
@@ -1367,7 +1412,7 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Value: £" & Text(LookUp(colDeals, id = gblSelectedDealId, value), "[$-en-GB]#,###")
+                                            ="Value: £" & Text(LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), value), "[$-en-GB]#,###")
                                           Weight: ='TextCanvas.Weight'.Semibold
                                     - lbl_dealProb:
                                         Control: Text@0.0.51
@@ -1376,7 +1421,7 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Probability: " & Text(LookUp(colDeals, id = gblSelectedDealId, probability)) & "%"
+                                            ="Probability: " & Text(LookUp(colDeals, id = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), probability)) & "%"
                               - lbl_returnHeading:
                                   Control: Text@0.0.51
                                   Properties:
@@ -1384,7 +1429,7 @@ Screens:
                                     Height: =20
                                     Size: =10
                                     Text: ="RETURN CASE"
-                                    Visible: =Not(IsBlank(LookUp(ReturnCases, dealId = gblSelectedDealId)))
+                                    Visible: =Not(IsBlank(LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId))))
                                     Weight: ='TextCanvas.Weight'.Bold
                               - con_returnMeta:
                                   Control: GroupContainer@1.5.0
@@ -1398,7 +1443,7 @@ Screens:
                                     PaddingLeft: =16
                                     PaddingRight: =16
                                     PaddingTop: =12
-                                    Visible: =Not(IsBlank(LookUp(ReturnCases, dealId = gblSelectedDealId)))
+                                    Visible: =Not(IsBlank(LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId))))
                                   Children:
                                     - lbl_rma:
                                         Control: Text@0.0.51
@@ -1406,49 +1451,49 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="RMA: " & LookUp(ReturnCases, dealId = gblSelectedDealId, rmaNumber)
+                                            ="RMA: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), rmaNumber)
                                     - lbl_order:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Order: " & LookUp(ReturnCases, dealId = gblSelectedDealId, orderNumber)
+                                            ="Order: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), orderNumber)
                                     - lbl_sku:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="SKU: " & LookUp(ReturnCases, dealId = gblSelectedDealId, sku)
+                                            ="SKU: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), sku)
                                     - lbl_qty:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Qty: " & Text(LookUp(ReturnCases, dealId = gblSelectedDealId, quantity))
+                                            ="Qty: " & Text(LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), quantity))
                                     - lbl_returnReason:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Reason: " & LookUp(ReturnCases, dealId = gblSelectedDealId, returnReason)
+                                            ="Reason: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), returnReason)
                                     - lbl_condition:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Condition: " & LookUp(ReturnCases, dealId = gblSelectedDealId, condition)
+                                            ="Condition: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), condition)
                                     - lbl_disposition:
                                         Control: Text@0.0.51
                                         Properties:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Disposition: " & LookUp(ReturnCases, dealId = gblSelectedDealId, disposition)
+                                            ="Disposition: " & LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), disposition)
                                     - lbl_refundAmount:
                                         Control: Text@0.0.51
                                         Properties:
@@ -1456,7 +1501,7 @@ Screens:
                                           Height: =18
                                           Size: =12
                                           Text: |-
-                                            ="Refund: £" & Text(LookUp(ReturnCases, dealId = gblSelectedDealId, refundAmount), "[$-en-GB]#,###.##")
+                                            ="Refund: £" & Text(LookUp(ReturnCases, dealId = Coalesce(gblSelectedDealId, gblSelectedEmail.DealId, gblSelectedEmail.dealId), refundAmount), "[$-en-GB]#,###.##")
                                           Weight: ='TextCanvas.Weight'.Semibold
                         - vcon_tabActivity:
                             Control: GroupContainer@1.5.0
@@ -1477,15 +1522,15 @@ Screens:
                                     Align: ='TextCanvas.Align'.Center
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Text: ="No activity yet for this thread."
-                                    Visible: =IsBlank(gblSelectedEmailId)
+                                    Visible: =IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id))
                               - lbl_internalActLabel:
                                   Control: Text@0.0.51
                                   Properties:
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Height: =18
                                     Size: =10
-                                    Text: ="INTERNAL ACTIONS"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: ="NOTES"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Weight: ='TextCanvas.Weight'.Bold
                               - txt_internalNote:
                                   Control: Classic/TextInput@2.3.2
@@ -1494,7 +1539,7 @@ Screens:
                                     Height: =60
                                     HintText: ="Add an internal note (not visible to customer)…"
                                     Mode: =TextMode.MultiLine
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                               - btn_addNote:
                                   Control: Button@0.0.45
                                   Properties:
@@ -1504,15 +1549,24 @@ Screens:
                                       =If(
                                           IsBlank(txt_internalNote.Text),
                                           Notify("Note cannot be empty.", NotificationType.Warning),
-                                          Patch(EmailActivities, Defaults(EmailActivities), {emailId: gblSelectedEmailId, actorName: gblActorName, type: "internal-note", visibility: "internal", body: txt_internalNote.Text, timestamp: Now()});
+                                          Patch(EmailActivities, Defaults(EmailActivities), {emailId: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id), actorName: gblActorName, type: "internal-note", visibility: "internal", body: txt_internalNote.Text, timestamp: Now()});
                                           Reset(txt_internalNote);
                                           Set(gblToastMessage, "Note added.");
                                           Set(gblToastVisible, true);
                                           Timer_Toast.Start()
                                       )
                                     Text: ="Add internal note"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Width: =140
+                              - lbl_approvalHeading:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    FontColor: =RGBA(148, 163, 184, 1)
+                                    Height: =18
+                                    Size: =10
+                                    Text: ="APPROVAL"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
+                                    Weight: ='TextCanvas.Weight'.Bold
                               - txt_approvalContext:
                                   Control: Classic/TextInput@2.3.2
                                   Properties:
@@ -1520,7 +1574,7 @@ Screens:
                                     Height: =60
                                     HintText: ="Approval context or decision comment…"
                                     Mode: =TextMode.MultiLine
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                               - hcon_approvalButtons:
                                   Control: GroupContainer@1.5.0
                                   Variant: AutoLayout
@@ -1531,21 +1585,21 @@ Screens:
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutGap: =8
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - btn_requestApproval:
                                         Control: Button@0.0.45
                                         Properties:
                                           BasePaletteColor: =RGBA(251, 191, 36, 1)
                                           OnSelect: |-
-                                            =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "required"});
-                                            Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "required"});
+                                            =Patch(Emails, LookUp(Emails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "required"});
+                                            Patch(colEmails, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "required"});
                                             Set(
                                                 gblSelectedEmail,
                                                 Patch(
                                                     gblSelectedEmail,
                                                     {
-                                                        Id: gblSelectedEmailId,
+                                                        Id: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id),
                                                         ApprovalStatus: "required"
                                                     }
                                                 )
@@ -1560,14 +1614,14 @@ Screens:
                                         Properties:
                                           BasePaletteColor: =RGBA(34, 197, 94, 1)
                                           OnSelect: |-
-                                            =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "approved"});
-                                            Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "approved"});
+                                            =Patch(Emails, LookUp(Emails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "approved"});
+                                            Patch(colEmails, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "approved"});
                                             Set(
                                                 gblSelectedEmail,
                                                 Patch(
                                                     gblSelectedEmail,
                                                     {
-                                                        Id: gblSelectedEmailId,
+                                                        Id: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id),
                                                         ApprovalStatus: "approved"
                                                     }
                                                 )
@@ -1582,14 +1636,14 @@ Screens:
                                         Properties:
                                           Appearance: ='ButtonCanvas.Appearance'.Secondary
                                           OnSelect: |-
-                                            =Patch(Emails, LookUp(Emails, id = gblSelectedEmailId), {approvalStatus: "rejected"});
-                                            Patch(colEmails, LookUp(colEmails, id = gblSelectedEmailId), {approvalStatus: "rejected"});
+                                            =Patch(Emails, LookUp(Emails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "rejected"});
+                                            Patch(colEmails, LookUp(colEmails, id = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), {approvalStatus: "rejected"});
                                             Set(
                                                 gblSelectedEmail,
                                                 Patch(
                                                     gblSelectedEmail,
                                                     {
-                                                        Id: gblSelectedEmailId,
+                                                        Id: Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id),
                                                         ApprovalStatus: "rejected"
                                                     }
                                                 )
@@ -1605,7 +1659,7 @@ Screens:
                                     AlignInContainer: =AlignInContainer.Stretch
                                     Fill: =RGBA(226, 232, 240, 1)
                                     Height: =1
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Width: =1
                               - lbl_timelineHeading:
                                   Control: Text@0.0.51
@@ -1613,17 +1667,17 @@ Screens:
                                     FontColor: =RGBA(148, 163, 184, 1)
                                     Height: =18
                                     Size: =10
-                                    Text: ="ACTIVITY TIMELINE"
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Text: ="TIMELINE"
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                     Weight: ='TextCanvas.Weight'.Bold
                               - gal_activityTimeline:
                                   Control: Gallery@2.15.0
                                   Variant: Vertical
                                   Properties:
-                                    Items: =SortByColumns(Filter(EmailActivities, emailId = gblSelectedEmailId), "timestamp", SortOrder.Ascending)
+                                    Items: =SortByColumns(Filter(EmailActivities, emailId = Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)), "timestamp", SortOrder.Ascending)
                                     TemplatePadding: =4
                                     TemplateSize: =96
-                                    Visible: =Not(IsBlank(gblSelectedEmailId))
+                                    Visible: =Not(IsBlank(Coalesce(gblSelectedEmailId, gblSelectedEmail.Id, gblSelectedEmail.id)))
                                   Children:
                                     - rec_tlBg:
                                         Control: Rectangle@2.3.0
